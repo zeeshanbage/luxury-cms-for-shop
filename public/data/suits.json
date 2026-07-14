@@ -1,0 +1,90 @@
+{
+  "id": "bespoke-suit",
+  "title": "Suits",
+  "description": "Crafted for Distinguished Posture.",
+  "heroImage": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1200&q=80",
+  "items": [
+    {
+      "id": "suit-1",
+      "title": "Italian Classic Grey",
+      "subtitle": "Super 150s Merino wool tailored in a soft Neapolitan shoulder silhouette.",
+      "heroMedia": {
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1200&q=80"
+      },
+      "media": [
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1200&q=80",
+          "thumbnail": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Super 150s Merino wool tailored in a soft Neapolitan shoulder silhouette.",
+          "focalPoint": { "x": 50, "y": 40 }
+        },
+        {
+          "type": "video",
+          "url": "https://assets.mixkit.co/videos/preview/mixkit-tailor-working-with-measuring-tape-around-his-neck-41620-large.mp4",
+          "thumbnail": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Designed by master cutters mapping your posture, build, and movement.",
+          "focalPoint": { "x": 50, "y": 50 }
+        },
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=1200&q=80",
+          "thumbnail": "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Structured front panels drafted with floating canvas chest inserts.",
+          "focalPoint": { "x": 60, "y": 30 }
+        }
+      ]
+    },
+    {
+      "id": "suit-2",
+      "title": "Midnight Black Tuxedo",
+      "subtitle": "Impeccable evening wear with silk grosgrain peak lapels and satin details.",
+      "heroMedia": {
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=1200&q=80"
+      },
+      "media": [
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=1200&q=80",
+          "thumbnail": "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Impeccable evening wear with silk grosgrain peak lapels and satin details.",
+          "focalPoint": { "x": 50, "y": 30 }
+        },
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80",
+          "thumbnail": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Classic black tie silhouette tailored for absolute evening elegance.",
+          "focalPoint": { "x": 50, "y": 45 }
+        }
+      ]
+    },
+    {
+      "id": "suit-3",
+      "title": "Double-Breasted Cashmere",
+      "subtitle": "Luxurious charcoal cashmere blend with signature six-button configuration.",
+      "heroMedia": {
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1618886614638-80e3c103d31a?auto=format&fit=crop&w=1200&q=80"
+      },
+      "media": [
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1618886614638-80e3c103d31a?auto=format&fit=crop&w=1200&q=80",
+          "thumbnail": "https://images.unsplash.com/photo-1618886614638-80e3c103d31a?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Luxurious charcoal cashmere blend with signature six-button configuration.",
+          "focalPoint": { "x": 60, "y": 40 }
+        },
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1200&q=80",
+          "thumbnail": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Heavyweight woolen drapes providing pristine winter structural silhouettes.",
+          "focalPoint": { "x": 50, "y": 50 }
+        }
+      ]
+    }
+  ]
+}

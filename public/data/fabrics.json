@@ -1,0 +1,65 @@
+{
+  "id": "fabric-shop",
+  "title": "Fabrics",
+  "description": "Crafted from Prestigious Mills.",
+  "heroImage": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1200&q=80",
+  "items": [
+    {
+      "id": "fabric-1",
+      "title": "Loro Piana Cashmere",
+      "subtitle": "Superfine Italian cashmere wool offering a luxurious handfeel and weight.",
+      "heroMedia": {
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1200&q=80"
+      },
+      "media": [
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1200&q=80",
+          "thumbnail": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Superfine Italian cashmere wool offering a luxurious handfeel and weight.",
+          "focalPoint": { "x": 50, "y": 45 }
+        },
+        {
+          "type": "video",
+          "url": "https://assets.mixkit.co/videos/preview/mixkit-tailor-drawing-on-fabric-with-a-chalk-41618-large.mp4",
+          "thumbnail": "https://images.unsplash.com/photo-1588854337236-6889d631faa8?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Precision pattern chalking directly onto elite imported wool structures.",
+          "focalPoint": { "x": 50, "y": 50 }
+        },
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&w=1200&q=80",
+          "thumbnail": "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Warm cashmere locks structured to remain completely wrinkle-free.",
+          "focalPoint": { "x": 50, "y": 40 }
+        }
+      ]
+    },
+    {
+      "id": "fabric-2",
+      "title": "Dormeuil Super 200s",
+      "subtitle": "Ultra-lightweight wool fabric woven in France for supreme summer drapes.",
+      "heroMedia": {
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1588854337236-6889d631faa8?auto=format&fit=crop&w=1200&q=80"
+      },
+      "media": [
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1588854337236-6889d631faa8?auto=format&fit=crop&w=1200&q=80",
+          "thumbnail": "https://images.unsplash.com/photo-1588854337236-6889d631faa8?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Ultra-lightweight wool fabric woven in France for supreme summer drapes.",
+          "focalPoint": { "x": 50, "y": 50 }
+        },
+        {
+          "type": "image",
+          "url": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1200&q=80",
+          "thumbnail": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=150&q=80",
+          "subtitle": "Exclusive collection bolts imported from the world's most prestigious houses.",
+          "focalPoint": { "x": 50, "y": 45 }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,678 @@
+import { useState, useEffect } from "react";
+import { 
+  motion, 
+  AnimatePresence, 
+  useScroll, 
+  useTransform, 
+  useMotionValue, 
+  useSpring 
+} from "framer-motion";
+import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { getImageUrl } from "@/utils/image";
+import { useSettings } from "@/hooks/useDbQueries";
+
+interface MediaItem {
+  type: "image" | "video";
+  url: string;
+  thumbnail: string;
+  subtitle: string;
+  focalPoint?: { x: number; y: number };
+}
+
+interface CollectionItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  heroMedia: {
+    type: "image" | "video";
+    url: string;
+  };
+  media: MediaItem[];
+  uniqueId?: string;
+}
+
+interface CollectionData {
+  id: string;
+  title: string;
+  description: string;
+  heroImage: string;
+  items: CollectionItem[];
+}
+
+// Fullscreen Immersive Lightbox Media Viewer
+function FullscreenLightbox({ 
+  item, 
+  initialIndex, 
+  onClose 
+}: { 
+  item: CollectionItem; 
+  initialIndex: number; 
+  onClose: () => void; 
+}) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const mediaCount = item.media.length;
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % mediaCount);
+    setIsPlaying(true);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + mediaCount) % mediaCount);
+    setIsPlaying(true);
+  };
+
+  // Keyboard navigation listeners
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") handlePrev();
+      if (e.key === "ArrowRight") handleNext();
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentIndex]);
+
+  const activeMedia = item.media[currentIndex];
+
+  // Mobile swipe gesture handler
+  const dragThreshold = 50;
+  const handleDragEnd = (_: any, info: any) => {
+    if (info.offset.x < -dragThreshold) {
+      handleNext();
+    } else if (info.offset.x > dragThreshold) {
+      handlePrev();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center select-none">
+      {/* Background radial gradient vignette */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.85)_100%)] pointer-events-none" />
+
+      {/* Top action bar */}
+      <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-50 text-white">
+        <div className="flex flex-col text-left">
+          <span className="text-[10px] tracking-[0.3em] font-sans text-luxury-gold uppercase font-bold">
+            {item.title} Lookbook
+          </span>
+          <span className="text-xs font-light text-zinc-400 mt-0.5">
+            Media {currentIndex + 1} of {mediaCount}
+          </span>
+        </div>
+        <button 
+          onClick={onClose}
+          className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors pointer-events-auto"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* Left Desktop Arrow */}
+      <button 
+        onClick={handlePrev}
+        className="hidden md:flex absolute left-8 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white transition-colors z-50"
+      >
+        <ChevronLeft size={20} />
+      </button>
+
+      {/* Main Media Slide Container */}
+      <div className="relative w-full max-w-5xl h-[70vh] flex items-center justify-center z-40 px-6">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            onDragEnd={handleDragEnd}
+            className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing"
+          >
+            {activeMedia.type === "image" ? (
+              <img
+                src={getImageUrl(activeMedia.url)}
+                alt={item.title}
+                className="max-w-full max-h-full object-contain pointer-events-none rounded-sm shadow-2xl"
+              />
+            ) : (
+              <div className="relative max-w-full max-h-full aspect-video flex items-center justify-center">
+                <video
+                  src={activeMedia.url}
+                  className="w-full h-full object-contain rounded-sm shadow-2xl"
+                  autoPlay={isPlaying}
+                  controls
+                  muted
+                  playsInline
+                  loop
+                />
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Right Desktop Arrow */}
+      <button 
+        onClick={handleNext}
+        className="hidden md:flex absolute right-8 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white transition-colors z-50"
+      >
+        <ChevronRight size={20} />
+      </button>
+
+      {/* Bottom Subtitle Caption overlay */}
+      <div className="absolute bottom-28 z-50 max-w-xl text-center px-6">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={currentIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="text-xs sm:text-sm text-zinc-300 font-light leading-relaxed"
+          >
+            {activeMedia.subtitle}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+
+      {/* Bottom Lightbox Thumbnail gallery */}
+      <div className="absolute bottom-6 z-50 flex items-center justify-center w-full">
+        <div className="flex items-center space-x-2 bg-black/65 px-4 py-2 border border-white/10 rounded-full backdrop-blur-md">
+          {item.media.map((mediaItem, mIdx) => {
+            const isSelected = currentIndex === mIdx;
+            return (
+              <button
+                key={mIdx}
+                onClick={() => {
+                  setCurrentIndex(mIdx);
+                  setIsPlaying(true);
+                }}
+                className={`relative w-10 h-10 rounded-sm overflow-hidden transition-all duration-300 ${
+                  isSelected 
+                    ? "ring-2 ring-luxury-gold scale-105" 
+                    : "opacity-60 hover:opacity-100 border border-white/5"
+                }`}
+              >
+                <img
+                  src={mediaItem.thumbnail}
+                  alt="Thumb"
+                  className="w-full h-full object-cover"
+                />
+                {mediaItem.type === "video" && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <Play size={10} className="fill-current text-white" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Child component to manage each collection campaign product (Exactly 1 fullscreen viewport height)
+function ProductCampaign({ 
+  item, 
+  index, 
+  onOpenLightbox 
+}: { 
+  item: CollectionItem; 
+  index: number; 
+  onOpenLightbox: (activeMediaIdx: number) => void; 
+}) {
+  const isEven = index % 2 === 0;
+
+  // Determine if this is a landscape product (e.g. fabric swatches) or a portrait suit/sherwani campaign
+  const isLandscape = item.id.toLowerCase().includes("fabric") || item.id.toLowerCase().includes("swatch");
+
+  // Load the primary hero media item
+  const primaryMedia = item.media[0] || { type: "image", url: item.heroMedia.url, focalPoint: { x: 50, y: 50 } };
+  const focalStyles = primaryMedia.focalPoint 
+    ? `${primaryMedia.focalPoint.x}% ${primaryMedia.focalPoint.y}%` 
+    : "center";
+
+  return (
+    <div className="relative h-screen w-full flex items-center justify-center border-b border-white/5 bg-luxury-black overflow-hidden py-12 md:py-0 select-none">
+      
+      {/* Full-bleed background media cover (as before, unblurred at 30% opacity to blend into the luxury black backdrop) */}
+      <div 
+        onClick={() => onOpenLightbox(0)}
+        className="absolute inset-0 z-0 w-full h-full select-none overflow-hidden cursor-zoom-in"
+      >
+        {primaryMedia.type === "image" ? (
+          <img
+            src={getImageUrl(primaryMedia.url)}
+            alt="Background Cover"
+            style={{ objectPosition: focalStyles }}
+            className="w-full h-full object-cover opacity-30 transition-transform duration-10000 ease-out scale-100"
+          />
+        ) : (
+          <video
+            src={primaryMedia.url}
+            style={{ objectPosition: focalStyles }}
+            className="w-full h-full object-cover opacity-30"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        )}
+        {/* Soft layout shading gradients for cinematic bleed */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black pointer-events-none" />
+      </div>
+
+      {/* Grid container layout */}
+      <div className="max-w-7xl mx-auto px-6 w-full h-full grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center relative z-20">
+        
+        {/* Editorial Text Overlay Column */}
+        <div className={`col-span-12 md:col-span-5 flex flex-col space-y-4 md:space-y-6 order-2 md:order-none pointer-events-auto ${
+          isEven ? "text-left" : "md:col-start-8 text-right items-end ml-auto"
+        }`}>
+          <span className="text-[10px] tracking-[0.3em] font-sans text-luxury-gold uppercase font-bold flex items-center gap-2">
+            <Sparkles size={12} />
+            Model 0{index + 1}
+          </span>
+          
+          <h2 className="text-4xl md:text-5xl xl:text-6xl font-light tracking-wider font-serif text-white uppercase leading-tight">
+            {item.title}
+          </h2>
+
+          <p className="text-zinc-300 font-light text-xs md:text-sm leading-relaxed max-w-sm">
+            {item.subtitle}
+          </p>
+
+          <span className="text-[9px] tracking-[0.2em] uppercase font-sans text-zinc-500 font-semibold select-none pt-2">
+            Click frame to expand
+          </span>
+        </div>
+
+        {/* Cinematic Framed Photo Box Column */}
+        <div className={`col-span-12 md:col-span-7 flex justify-center order-1 md:order-none`}>
+          
+          {/* Outer double-border frame with luxury gold glow drop shadow */}
+          <div 
+            onClick={() => onOpenLightbox(0)}
+            className={`cursor-zoom-in relative p-1.5 bg-[#09090b]/85 border border-white/20 rounded-sm shadow-[0_0_30px_rgba(197,168,128,0.25)] hover:shadow-[0_0_45px_rgba(197,168,128,0.4)] transition-all duration-700 hover:scale-[1.01] pointer-events-auto ${
+              isLandscape 
+                ? "w-full max-w-[480px] sm:max-w-[560px] aspect-[16/10]" 
+                : "w-[260px] sm:w-[320px] md:w-[360px] aspect-[3/4]"
+            }`}
+          >
+            {/* Inner keyline border */}
+            <div className="w-full h-full border border-white/10 rounded-sm overflow-hidden relative">
+              {primaryMedia.type === "image" ? (
+                <img
+                  src={getImageUrl(primaryMedia.url)}
+                  alt={item.title}
+                  style={{ objectPosition: focalStyles }}
+                  className="w-full h-full object-cover transition-transform duration-[12s] ease-out hover:scale-104"
+                />
+              ) : (
+                <video
+                  src={primaryMedia.url}
+                  style={{ objectPosition: focalStyles }}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              )}
+              
+              {/* Soft vignette overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+              
+              {/* Play symbol indicator overlay for video cards */}
+              {primaryMedia.type === "video" && (
+                <div className="absolute bottom-4 right-4 p-2 bg-black/60 border border-white/10 rounded-full text-white/90">
+                  <Play size={12} className="fill-current" />
+                </div>
+              )}
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+export default function Home() {
+  const { isLoading: isSettingsLoading } = useSettings();
+  const [activeCategory, setActiveCategory] = useState<string>("suits");
+  const [collection, setCollection] = useState<CollectionData | null>(null);
+  const [pageLimit, setPageLimit] = useState<number>(5);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Lightbox view state manager
+  const [lightboxActiveProduct, setLightboxActiveProduct] = useState<CollectionItem | null>(null);
+  const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
+
+  // 1. Fetch category dataset from JSON
+  useEffect(() => {
+    setIsLoading(true);
+    setPageLimit(5); // Reset scroll batches on category swap
+    fetch(`/data/${activeCategory}.json`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load collection dataset");
+        return res.json();
+      })
+      .then((data: CollectionData) => {
+        setCollection(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("[Home Lookbook] Fetch error:", err);
+        setIsLoading(false);
+      });
+  }, [activeCategory]);
+
+  // 2. Mouse coordinates tracking for ambient cursor spotlight glow
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 60, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 60, damping: 20 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    mouseX.set(e.clientX);
+    mouseY.set(e.clientY);
+  };
+
+  // 3. Parallax scroll bindings for storefront hero backdrop
+  const { scrollY } = useScroll();
+  const heroImageParallax = useTransform(scrollY, [0, 500], [0, -50]);
+
+  // 4. Infinite Scroll Sentinel Observer
+  useEffect(() => {
+    if (!collection || collection.items.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setPageLimit((prev) => prev + 5);
+        }
+      },
+      { threshold: 0.1, rootMargin: "200px" }
+    );
+
+    const target = document.getElementById("infinite-scroll-sentinel");
+    if (target) observer.observe(target);
+
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [collection, pageLimit]);
+
+  // 5. Scroll navigation action triggers
+  const scrollToCampaignGallery = () => {
+    const galleryElement = document.getElementById("campaign-gallery-root");
+    if (galleryElement) {
+      const yOffset = -56 - 24; // Selector Height (56px) + margin offset (24px)
+      const y = galleryElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
+
+  // 6. Infinite Loop List Builder (Concatenates copy items safely when exceeding total limit)
+  const getLoadedItems = (): CollectionItem[] => {
+    if (!collection || !collection.items || collection.items.length === 0) return [];
+    
+    const allItems = collection.items;
+    const result: CollectionItem[] = [];
+    const repetitions = Math.ceil(pageLimit / allItems.length);
+    
+    for (let i = 0; i < repetitions; i++) {
+      const mapped = allItems.map((item, idx) => ({
+        ...item,
+        uniqueId: `${item.id}-rep-${i}-${idx}`
+      }));
+      result.push(...mapped);
+    }
+    
+    return result.slice(0, pageLimit);
+  };
+
+  const loadedItems = getLoadedItems();
+
+  // Custom uppercase labels matching the selector in your attachment image
+  const categories = [
+    { id: "suits", label: "GROOM" },
+    { id: "sherwani", label: "WEDDING" },
+    { id: "kurta", label: "KURTA" },
+    { id: "fabrics", label: "FABRICS" },
+  ];
+
+  // Loading spinner layout
+  if (isSettingsLoading || !collection) {
+    return (
+      <div className="h-screen w-full bg-black flex flex-col items-center justify-center space-y-6">
+        <motion.div
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center"
+        >
+          <span className="text-3xl font-medium tracking-[0.3em] font-serif text-white mb-1">
+            FASHION KING
+          </span>
+          <span className="text-[0.65rem] tracking-[0.4em] uppercase text-luxury-gold">
+            CLOTHS & TAILORING
+          </span>
+        </motion.div>
+        <div className="w-12 h-[1px] bg-luxury-gold/30 relative overflow-hidden">
+          <motion.div
+            initial={{ left: "-100%" }}
+            animate={{ left: "100%" }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            className="absolute top-0 bottom-0 w-1/2 bg-luxury-gold"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      onMouseMove={handleMouseMove}
+      className="relative min-h-screen w-full bg-luxury-black"
+    >
+      {/* Background container to isolate and clip off-screen glowing spotlights, preventing layout scroll stretches */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10 select-none">
+        {/* Dynamic backdrop color highlights relative to category tab */}
+        <div className={`absolute inset-0 bg-gradient-to-tr transition-colors duration-1000 ${
+          activeCategory === "suits" ? "from-[#050608] via-zinc-950 to-[#06101c]/10" :
+          activeCategory === "sherwani" ? "from-[#080505] via-zinc-950 to-[#1c0808]/10" :
+          activeCategory === "kurta" ? "from-[#080705] via-zinc-950 to-[#1f160d]/10" :
+          "from-black via-zinc-950 to-neutral-950/20"
+        }`} />
+
+        {/* Ambient Glowing cursor spotlight */}
+        <motion.div
+          className="absolute pointer-events-none rounded-full bg-radial from-luxury-gold/5 via-transparent to-transparent blur-3xl w-[600px] h-[600px]"
+          style={{
+            x: springX,
+            y: springY,
+            translateX: "-50%",
+            translateY: "-50%",
+          }}
+        />
+
+        {/* Background design matrix grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:5rem_5rem]" />
+      </div>
+
+      {/* SECTION 1: Fullscreen Official Storefront Landing Hero */}
+      <div className="h-[calc(100vh-112px)] w-full flex items-center justify-center max-w-7xl mx-auto px-6 relative z-20">
+        
+        {/* Centered official showroom copy overlay */}
+        <div className="flex flex-col items-center justify-center text-center space-y-6 max-w-3xl select-none">
+          
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center gap-3 px-4 py-1.5 bg-black/60 border border-luxury-gold/30 rounded-full text-[10px] sm:text-xs font-sans tracking-[0.25em] text-luxury-gold uppercase font-semibold backdrop-blur-md"
+          >
+            <Sparkles size={12} className="animate-pulse" />
+            <span>Official Digital Showroom</span>
+          </motion.div>
+
+          <div className="overflow-hidden py-1">
+            <motion.h1
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light tracking-wide font-serif text-white leading-none uppercase"
+            >
+              Fashion King
+            </motion.h1>
+          </div>
+
+          <div className="overflow-hidden">
+            <motion.p
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="text-lg sm:text-2xl md:text-3xl tracking-[0.3em] font-serif text-luxury-gold font-light italic"
+            >
+              Clothes & Tailoring
+            </motion.p>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.3 }}
+            className="flex flex-col items-center space-y-3 pt-4"
+          >
+            <p className="text-zinc-300 font-light text-xs sm:text-sm tracking-wider leading-relaxed max-w-lg">
+              Suit & Sherwani Specialist • Exclusive Tailoring & Fabrics
+            </p>
+            <span className="text-[10px] tracking-[0.15em] text-zinc-500 uppercase font-sans">
+              Shahinsha Nagar, Beed, Maharashtra
+            </span>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="pt-6"
+          >
+            <button
+              onClick={scrollToCampaignGallery}
+              className="group/btn inline-flex items-center space-x-3 px-8 py-4 bg-white hover:bg-luxury-gold text-black text-xs tracking-widest uppercase font-semibold font-sans rounded-sm transition-all duration-300 shadow-luxury-glow"
+            >
+              <span>Explore Lookbook</span>
+              <ArrowDown size={14} className="transform transition-transform duration-300 group-hover/btn:translate-y-1 animate-bounce" />
+            </button>
+          </motion.div>
+
+        </div>
+
+        {/* Storefront backdrop image (parallax enabled, brightness-75 to keep neon sign highly readable) */}
+        <motion.div 
+          style={{ y: heroImageParallax }}
+          className="absolute inset-0 z-0 select-none overflow-hidden pointer-events-none"
+        >
+          <img
+            src={getImageUrl("/images/signboard.png")}
+            alt="Fashion King Storefront Sign"
+            className="w-full h-full object-cover filter brightness-[0.72] contrast-[1.03] saturate-[0.95]"
+          />
+          {/* Soft gradients only, ensuring sign remains readable */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0.65)_100%)] pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-luxury-black to-transparent pointer-events-none" />
+        </motion.div>
+      </div>
+
+      {/* SECTION 2: Sticky selector capsule pill bar (height 56px, pins at top-6 on scroll) */}
+      <div className="sticky top-6 z-40 w-full flex justify-center py-3 select-none pointer-events-none">
+        <div className="pointer-events-auto flex items-center space-x-1 md:space-x-2 bg-[#09090b]/80 border border-white/5 px-4 md:px-6 py-2.5 rounded-full backdrop-blur-lg shadow-2xl relative">
+          
+          {categories.map((cat) => {
+            const isActive = activeCategory === cat.id;
+
+            return (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setActiveCategory(cat.id);
+                  setTimeout(scrollToCampaignGallery, 50);
+                }}
+                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold transition-colors duration-500 outline-none ${
+                  isActive ? "text-black" : "text-zinc-500 hover:text-zinc-200"
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="activeHomeCapsule"
+                    className="absolute inset-0 bg-[#c5a880] rounded-full -z-10"
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  />
+                )}
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Loading overlay for collection switches */}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-45 bg-luxury-black/50 backdrop-blur-sm flex items-center justify-center pointer-events-none"
+          >
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-luxury-gold rounded-full animate-bounce" />
+              <div className="w-2 h-2 bg-luxury-gold rounded-full animate-bounce [animation-delay:0.2s]" />
+              <div className="w-2 h-2 bg-luxury-gold rounded-full animate-bounce [animation-delay:0.4s]" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* SECTION 3: Campaign Lookbook - Vertical scroll only updates product sections */}
+      <div id="campaign-gallery-root" className="w-full relative z-10 bg-black">
+        {loadedItems.map((item, index) => (
+          <ProductCampaign
+            key={item.uniqueId}
+            item={item}
+            index={index}
+            onOpenLightbox={(initialMediaIdx) => {
+              setLightboxActiveProduct(item);
+              setLightboxInitialIndex(initialMediaIdx);
+            }}
+          />
+        ))}
+      </div>
+
+      {/* SECTION 4: Immersive Fullscreen Lightbox Portal */}
+      <AnimatePresence>
+        {lightboxActiveProduct && (
+          <FullscreenLightbox
+            item={lightboxActiveProduct}
+            initialIndex={lightboxInitialIndex}
+            onClose={() => setLightboxActiveProduct(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Bottom infinite scroll target */}
+      <div id="infinite-scroll-sentinel" className="h-20 w-full flex items-center justify-center py-10 relative z-10 bg-black">
+        <div className="flex items-center space-x-2 text-zinc-600 text-xs tracking-widest uppercase font-sans select-none">
+          <span>Loading next segment</span>
+          <span className="w-1.5 h-1.5 bg-luxury-gold rounded-full animate-ping" />
+        </div>
+      </div>
+    </div>
+  );
+}
