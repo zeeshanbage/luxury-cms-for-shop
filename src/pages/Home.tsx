@@ -50,17 +50,14 @@ function FullscreenLightbox({
   onClose: () => void;
 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [isPlaying, setIsPlaying] = useState(true);
   const mediaCount = item.media.length;
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % mediaCount);
-    setIsPlaying(true);
   };
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + mediaCount) % mediaCount);
-    setIsPlaying(true);
   };
 
   // Keyboard navigation listeners
@@ -185,7 +182,6 @@ function FullscreenLightbox({
                 key={mIdx}
                 onClick={() => {
                   setCurrentIndex(mIdx);
-                  setIsPlaying(true);
                 }}
                 className={`relative w-10 h-10 rounded-sm overflow-hidden transition-all duration-300 ${isSelected
                   ? "ring-2 ring-luxury-gold scale-105"
@@ -340,30 +336,38 @@ function ProductCampaign({
 export default function Home() {
   const { isLoading: isSettingsLoading } = useSettings();
   const [activeCategory, setActiveCategory] = useState<string>("suits");
-  const [collection, setCollection] = useState<CollectionData | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Cache all 4 categories so switching is instant — no re-fetch on tab tap
+  const [collectionCache, setCollectionCache] = useState<Record<string, CollectionData>>({});
 
   // Lightbox view state manager
   const [lightboxActiveProduct, setLightboxActiveProduct] = useState<CollectionItem | null>(null);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
 
-  // 1. Fetch category dataset from JSON + merge admin uploaded products from localStorage
+  const categories = [
+    { id: "suits", label: "SUITS" },
+    { id: "sherwani", label: "SHERWANI" },
+    { id: "kurta", label: "KURTA" },
+    { id: "fabrics", label: "FORMALS" },
+  ];
+
+  // 1. Preload ALL categories in parallel at mount — zero wait on tab switch
   useEffect(() => {
-    setIsLoading(true);
-    fetch(`/data/${activeCategory}.json`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load collection dataset");
-        return res.json();
-      })
-      .then((data: CollectionData) => {
-        setCollection(data);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error("[Home Lookbook] Fetch error:", err);
-        setIsLoading(false);
-      });
-  }, [activeCategory]);
+    Promise.all(
+      categories.map((cat) =>
+        fetch(`/data/${cat.id}.json`)
+          .then((r) => r.json())
+          .then((data: CollectionData) => ({ id: cat.id, data }))
+          .catch(() => ({ id: cat.id, data: { id: cat.id, title: cat.label, description: "", heroImage: "", items: [] } as CollectionData }))
+      )
+    ).then((results) => {
+      const cache: Record<string, CollectionData> = {};
+      results.forEach(({ id, data }) => { cache[id] = data; });
+      setCollectionCache(cache);
+    });
+  }, []);
+
+  const collection = collectionCache[activeCategory] ?? null;
+  const isLoading = Object.keys(collectionCache).length === 0;
 
   // 2. Mouse coordinates tracking for ambient cursor spotlight glow
   const mouseX = useMotionValue(0);
@@ -406,14 +410,6 @@ export default function Home() {
     ...item,
     uniqueId: `${item.id}-${idx}`
   }));
-
-  // Custom uppercase labels matching the selector in your attachment image
-  const categories = [
-    { id: "suits", label: "SUITS" },
-    { id: "sherwani", label: "SHERWANI" },
-    { id: "kurta", label: "KURTA" },
-    { id: "fabrics", label: "FORMALS" },
-  ];
 
   // Loading spinner layout
   if (isSettingsLoading || !collection) {
@@ -555,28 +551,29 @@ export default function Home() {
         </div>
       </div>
 
-      {/* SECTION 2: Sticky selector capsule pill bar (height 56px, pins at top-6 on scroll) */}
+      {/* SECTION 2: Sticky selector capsule pill bar */}
       <div className="sticky top-6 z-40 w-full flex justify-center py-3 select-none pointer-events-none">
         <div className="pointer-events-auto flex items-center space-x-1 md:space-x-2 bg-[#09090b]/80 border border-white/5 px-4 md:px-6 py-2.5 rounded-full backdrop-blur-lg shadow-2xl relative">
-
           {categories.map((cat) => {
             const isActive = activeCategory === cat.id;
-
             return (
               <button
                 key={cat.id}
-                onClick={() => {
-                  setActiveCategory(cat.id);
-                  setTimeout(scrollToCampaignGallery, 50);
-                }}
-                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold transition-colors duration-500 outline-none ${isActive ? "text-black" : "text-zinc-500 hover:text-zinc-200"
-                  }`}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold outline-none transition-colors duration-150 ${
+                  isActive ? "text-black" : "text-zinc-500 hover:text-zinc-200"
+                }`}
               >
                 {isActive && (
                   <motion.span
                     layoutId="activeHomeCapsule"
                     className="absolute inset-0 bg-[#c5a880] rounded-full -z-10"
-                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 38,
+                      mass: 0.6,
+                    }}
                   />
                 )}
                 {cat.label}
@@ -586,61 +583,57 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Loading overlay for collection switches */}
-      <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-45 bg-luxury-black/50 backdrop-blur-sm flex items-center justify-center pointer-events-none"
-          >
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-luxury-gold rounded-full animate-bounce" />
-              <div className="w-2 h-2 bg-luxury-gold rounded-full animate-bounce [animation-delay:0.2s]" />
-              <div className="w-2 h-2 bg-luxury-gold rounded-full animate-bounce [animation-delay:0.4s]" />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* SECTION 3: Campaign Lookbook */}
+      {/* SECTION 3: Campaign Lookbook — GPU crossfade on category switch */}
       <div id="campaign-gallery-root" className="w-full relative z-10 bg-black">
-        {loadedItems.length === 0 && !isLoading ? (
-          /* ── Empty State ── */
-          <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-24 space-y-6 border-t border-white/5">
-            <div className="w-20 h-20 rounded-full bg-white/5 border border-luxury-gold/10 flex items-center justify-center">
-              <motion.div
-                animate={{ opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Sparkles size={24} className="text-luxury-gold/60" />
-              </motion.div>
-            </div>
-            <div className="space-y-2 max-w-sm">
-              <h3 className="text-lg font-serif font-light tracking-widest text-white uppercase">
-                Collection Coming Soon
-              </h3>
-              <p className="text-xs text-zinc-500 font-light leading-relaxed tracking-wider">
-                Our curated lookbook for this collection is being prepared.
-                Visit us in store or check back soon.
-              </p>
-            </div>
-            <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-luxury-gold/30 to-transparent" />
-          </div>
-        ) : (
-          loadedItems.map((item, index) => (
-            <ProductCampaign
-              key={item.uniqueId}
-              item={item}
-              index={index}
-              onOpenLightbox={(initialMediaIdx) => {
-                setLightboxActiveProduct(item);
-                setLightboxInitialIndex(initialMediaIdx);
-              }}
-            />
-          ))
-        )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeCategory}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{
+              duration: 0.22,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+            style={{ willChange: "opacity, transform" }}
+          >
+            {loadedItems.length === 0 && !isLoading ? (
+              /* ── Empty State ── */
+              <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-24 space-y-6 border-t border-white/5">
+                <div className="w-20 h-20 rounded-full bg-white/5 border border-luxury-gold/10 flex items-center justify-center">
+                  <motion.div
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Sparkles size={24} className="text-luxury-gold/60" />
+                  </motion.div>
+                </div>
+                <div className="space-y-2 max-w-sm">
+                  <h3 className="text-lg font-serif font-light tracking-widest text-white uppercase">
+                    Collection Coming Soon
+                  </h3>
+                  <p className="text-xs text-zinc-500 font-light leading-relaxed tracking-wider">
+                    Our curated lookbook for this collection is being prepared.
+                    Visit us in store or check back soon.
+                  </p>
+                </div>
+                <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-luxury-gold/30 to-transparent" />
+              </div>
+            ) : (
+              loadedItems.map((item, index) => (
+                <ProductCampaign
+                  key={item.uniqueId}
+                  item={item}
+                  index={index}
+                  onOpenLightbox={(initialMediaIdx) => {
+                    setLightboxActiveProduct(item);
+                    setLightboxInitialIndex(initialMediaIdx);
+                  }}
+                />
+              ))
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* SECTION 4: Immersive Fullscreen Lightbox Portal */}

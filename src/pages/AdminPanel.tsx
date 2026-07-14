@@ -140,7 +140,7 @@ function AddProductForm({
 }) {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [_file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
   const [fileType, setFileType] = useState<"image" | "video">("image");
   const [saving, setSaving] = useState(false);
