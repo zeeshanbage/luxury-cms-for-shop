@@ -2,37 +2,21 @@ import { Outlet, Link } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { Phone, Mail, MapPin, Shield } from "lucide-react";
 import { useSettings } from "@/hooks/useDbQueries";
+import { getImageUrl } from "@/utils/image";
 
-// Custom responsive replica component of the storefront neon sign
-const StorefrontLogo = () => (
-  <div className="flex flex-col items-center justify-center select-none text-center">
-    {/* Main brand letters: Fashion King */}
-    <div className="flex items-end font-serif text-xl sm:text-2xl font-bold tracking-wide text-white leading-none">
-      <span className="text-[#e11d48] font-semibold drop-shadow-[0_0_3px_rgba(225,29,72,0.4)]">F</span>
-      <span>...ashon</span>
-      <span className="mx-0.5"></span>
-      <span className="text-[#e11d48] relative inline-block font-semibold drop-shadow-[0_0_3px_rgba(225,29,72,0.4)]">
-        K
-        {/* SVG crown overlay matching the storefront sign board crown shape */}
-        <svg 
-          className="absolute -top-[12px] left-[52%] transform -translate-x-1/2 w-[18px] h-[18px] text-luxury-gold fill-current drop-shadow-[0_0_4px_rgba(212,175,55,0.6)]" 
-          viewBox="0 0 24 24"
-        >
-          <path d="M18.85 5.25l-2.7 4.57-4.15-6.57-4.15 6.57-2.7-4.57L2.1 16.5h19.8zM4.5 18h15v1.5h-15z" />
-        </svg>
-      </span>
-      <span>ing</span>
+// Dynamic logo component using brand-logo.png
+const StorefrontLogo = () => {
+  const { data: settings } = useSettings();
+  return (
+    <div className="flex items-center justify-center select-none">
+      <img
+        src={getImageUrl("/images/brand-logo.png")}
+        alt={settings?.site_name || "Fashion King"}
+        className="h-14 sm:h-18 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(197,168,128,0.25)] transition-all duration-300 hover:scale-[1.02]"
+      />
     </div>
-    
-    {/* Thin underline matching sign layout */}
-    <div className="w-full h-[1.5px] bg-gradient-to-r from-transparent via-luxury-gold to-transparent mt-1.5" />
-    
-    {/* Cursive Subtitle */}
-    <span className="text-[10px] sm:text-[11px] tracking-[0.2em] font-serif italic text-luxury-gold font-light mt-0.5 drop-shadow-[0_0_2px_rgba(212,175,55,0.3)]">
-      Cloths & Tailoring
-    </span>
-  </div>
-);
+  );
+};
 
 export default function MainLayout() {
   const { data: settings } = useSettings();
@@ -145,7 +129,15 @@ export default function MainLayout() {
 
         {/* Footer Base */}
         <div className="max-w-7xl mx-auto px-6 border-t border-luxury-gold/5 pt-8 flex flex-col md:flex-row items-center justify-between text-[11px] font-light tracking-wider text-zinc-600">
-          <p>© {new Date().getFullYear()} FASHION KING. ALL RIGHTS RESERVED.</p>
+          <div className="flex flex-col space-y-1 md:space-y-0 text-center md:text-left">
+            <p>© {new Date().getFullYear()} FASHION KING. ALL RIGHTS RESERVED.</p>
+            <p className="text-[9px] text-zinc-700 uppercase tracking-widest mt-0.5">
+              Developed by{" "}
+              <a href="mailto:zeeshanbge@gmail.com" className="hover:text-luxury-gold transition-colors font-medium">
+                Zeeshan Bage
+              </a>
+            </p>
+          </div>
           <div className="flex space-x-6 mt-4 md:mt-0">
             {socials.instagram && <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-luxury-gold transition-colors uppercase">Instagram</a>}
             {socials.whatsapp && <a href={socials.whatsapp} target="_blank" rel="noopener noreferrer" className="hover:text-luxury-gold transition-colors uppercase">WhatsApp</a>}

@@ -2,87 +2,95 @@
   "id": "bespoke-suit",
   "title": "Suits",
   "description": "Crafted for Distinguished Posture.",
-  "heroImage": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1200&q=80",
+  "heroImage": "/images/suit-client.png",
   "items": [
     {
-      "id": "suit-1",
-      "title": "Italian Classic Grey",
-      "subtitle": "Super 150s Merino wool tailored in a soft Neapolitan shoulder silhouette.",
-      "heroMedia": {
-        "type": "image",
-        "url": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1200&q=80"
-      },
+      "id": "suit-client-main",
+      "title": "Signature Bespoke Suit",
+      "subtitle": "A perfectly tailored bespoke suit crafted to your exact measurements — structured, refined, and uniquely yours.",
+      "heroMedia": { "type": "image", "url": "/images/suit-client.png" },
       "media": [
         {
           "type": "image",
-          "url": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Super 150s Merino wool tailored in a soft Neapolitan shoulder silhouette.",
-          "focalPoint": { "x": 50, "y": 40 }
-        },
-        {
-          "type": "video",
-          "url": "https://assets.mixkit.co/videos/preview/mixkit-tailor-working-with-measuring-tape-around-his-neck-41620-large.mp4",
-          "thumbnail": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Designed by master cutters mapping your posture, build, and movement.",
-          "focalPoint": { "x": 50, "y": 50 }
-        },
-        {
-          "type": "image",
-          "url": "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Structured front panels drafted with floating canvas chest inserts.",
-          "focalPoint": { "x": 60, "y": 30 }
-        }
-      ]
-    },
-    {
-      "id": "suit-2",
-      "title": "Midnight Black Tuxedo",
-      "subtitle": "Impeccable evening wear with silk grosgrain peak lapels and satin details.",
-      "heroMedia": {
-        "type": "image",
-        "url": "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=1200&q=80"
-      },
-      "media": [
-        {
-          "type": "image",
-          "url": "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Impeccable evening wear with silk grosgrain peak lapels and satin details.",
+          "url": "/images/suit-client.png",
+          "thumbnail": "/images/suit-client.png",
+          "subtitle": "Handcrafted with precision tailoring — every stitch placed with intention.",
           "focalPoint": { "x": 50, "y": 30 }
-        },
-        {
-          "type": "image",
-          "url": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Classic black tie silhouette tailored for absolute evening elegance.",
-          "focalPoint": { "x": 50, "y": 45 }
         }
       ]
     },
     {
-      "id": "suit-3",
-      "title": "Double-Breasted Cashmere",
-      "subtitle": "Luxurious charcoal cashmere blend with signature six-button configuration.",
-      "heroMedia": {
-        "type": "image",
-        "url": "https://images.unsplash.com/photo-1618886614638-80e3c103d31a?auto=format&fit=crop&w=1200&q=80"
-      },
+      "id": "suit-burgundy-maroon",
+      "title": "Burgundy Shawl Lapel 3-Piece",
+      "subtitle": "A commanding maroon three-piece suit tailored in premium Italian satin-finish fabric with a matching pocket square.",
+      "heroMedia": { "type": "image", "url": "/images/suit_burgundy_maroon.jpg" },
       "media": [
         {
           "type": "image",
-          "url": "https://images.unsplash.com/photo-1618886614638-80e3c103d31a?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1618886614638-80e3c103d31a?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Luxurious charcoal cashmere blend with signature six-button configuration.",
-          "focalPoint": { "x": 60, "y": 40 }
-        },
+          "url": "/images/suit_burgundy_maroon.jpg",
+          "thumbnail": "/images/suit_burgundy_maroon.jpg",
+          "subtitle": "Rich maroon satin-finish fabric with structured shawl lapels and a tailored silhouette.",
+          "focalPoint": { "x": 50, "y": 30 }
+        }
+      ]
+    },
+    {
+      "id": "suit-grey-wedding",
+      "title": "Silver Grey Banquet 3-Piece",
+      "subtitle": "A refined light silver-grey suit with black contrast shirt, red silk tie, and ornate brooch chain — crafted for grand weddings.",
+      "heroMedia": { "type": "image", "url": "/images/suit_grey_wedding.jpg" },
+      "media": [
         {
           "type": "image",
-          "url": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Heavyweight woolen drapes providing pristine winter structural silhouettes.",
-          "focalPoint": { "x": 50, "y": 50 }
+          "url": "/images/suit_grey_wedding.jpg",
+          "thumbnail": "/images/suit_grey_wedding.jpg",
+          "subtitle": "Silver-grey suiting fabric with a structured peak lapel and artisan brooch chain accents.",
+          "focalPoint": { "x": 50, "y": 35 }
+        }
+      ]
+    },
+    {
+      "id": "suit-black-jodhpuri",
+      "title": "Black Jodhpuri Bandhgala",
+      "subtitle": "A statement black bandhgala suit with gold antique buttons, red pocket square, and intricate gold brooch chain — regal and timeless.",
+      "heroMedia": { "type": "image", "url": "/images/suit_black_jodhpuri.jpg" },
+      "media": [
+        {
+          "type": "image",
+          "url": "/images/suit_black_jodhpuri.jpg",
+          "thumbnail": "/images/suit_black_jodhpuri.jpg",
+          "subtitle": "Premium black superfine wool with gold antique buttons and hand-embroidered brooch detailing.",
+          "focalPoint": { "x": 50, "y": 30 }
+        }
+      ]
+    },
+    {
+      "id": "suit-silver-bandhgala",
+      "title": "Platinum Silver Bandhgala Jacket",
+      "subtitle": "A sleek silver-grey bandhgala jacket with black braid trim and silver brooch chain — perfect for festive occasions.",
+      "heroMedia": { "type": "image", "url": "/images/suit_silver_bandhgala.jpg" },
+      "media": [
+        {
+          "type": "image",
+          "url": "/images/suit_silver_bandhgala.jpg",
+          "thumbnail": "/images/suit_silver_bandhgala.jpg",
+          "subtitle": "Soft platinum silver fabric with handcrafted black braid trim along the Mandarin collar closure.",
+          "focalPoint": { "x": 50, "y": 40 }
+        }
+      ]
+    },
+    {
+      "id": "suit-charcoal-floral",
+      "title": "Charcoal Shimmer Wedding Suit",
+      "subtitle": "A sophisticated dark charcoal three-piece in shimmer fabric with a burgundy tie bar, gold brooch and pearl chain — built for the groom.",
+      "heroMedia": { "type": "image", "url": "/images/suit_charcoal_floral.jpg" },
+      "media": [
+        {
+          "type": "image",
+          "url": "/images/suit_charcoal_floral.jpg",
+          "thumbnail": "/images/suit_charcoal_floral.jpg",
+          "subtitle": "Charcoal shimmer suiting with a pearl-drop gold brooch chain and classic peak lapels.",
+          "focalPoint": { "x": 50, "y": 25 }
         }
       ]
     }

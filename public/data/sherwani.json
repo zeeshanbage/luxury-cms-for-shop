@@ -1,63 +1,36 @@
 {
   "id": "royal-sherwani",
   "title": "Sherwani",
-  "description": "Crafted for Royal Weddings.",
-  "heroImage": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1200&q=80",
+  "description": "Majestic Wedding & Ceremonial Wear.",
+  "heroImage": "/images/sherwani-client-1.png",
   "items": [
     {
-      "id": "sherwani-1",
-      "title": "Royal Ivory Zardozi",
-      "subtitle": "Intricately hand-woven cream raw silk adorned with antique gold thread borders.",
-      "heroMedia": {
-        "type": "image",
-        "url": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1200&q=80"
-      },
+      "id": "sherwani-client-1",
+      "title": "Royal Wedding Sherwani",
+      "subtitle": "An opulent hand-crafted sherwani designed for the grandest of occasions — embroidered with intricate detail and tailored with royal precision.",
+      "heroMedia": { "type": "image", "url": "/images/sherwani-client-1.png" },
       "media": [
         {
           "type": "image",
-          "url": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Intricately hand-woven cream raw silk adorned with antique gold thread borders.",
-          "focalPoint": { "x": 50, "y": 35 }
-        },
-        {
-          "type": "video",
-          "url": "https://assets.mixkit.co/videos/preview/mixkit-sewing-machine-needle-in-slow-motion-41615-large.mp4",
-          "thumbnail": "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Weeks of micro-stitch hand detailing crafted by our traditional karigars.",
-          "focalPoint": { "x": 50, "y": 50 }
-        },
-        {
-          "type": "image",
-          "url": "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Matching coordinates comprising inner kurtas, churidars, and matching stoles.",
-          "focalPoint": { "x": 50, "y": 45 }
+          "url": "/images/sherwani-client-1.png",
+          "thumbnail": "/images/sherwani-client-1.png",
+          "subtitle": "Premium sherwani with hand-worked embroidery and a perfectly structured silhouette.",
+          "focalPoint": { "x": 50, "y": 30 }
         }
       ]
     },
     {
-      "id": "sherwani-2",
-      "title": "Emerald Maharaja",
-      "subtitle": "Deep emerald green brocade with royal Mughal-inspired floral pattern reliefs.",
-      "heroMedia": {
-        "type": "image",
-        "url": "https://images.unsplash.com/photo-1621259182978-f011d5088a53?auto=format&fit=crop&w=1200&q=80"
-      },
+      "id": "sherwani-client-2",
+      "title": "Ceremonial Groom Sherwani",
+      "subtitle": "A majestic ceremonial sherwani in rich fabric, crafted to make the groom the center of every moment.",
+      "heroMedia": { "type": "image", "url": "/images/sherwani-client-2.png" },
       "media": [
         {
           "type": "image",
-          "url": "https://images.unsplash.com/photo-1621259182978-f011d5088a53?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1621259182978-f011d5088a53?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Deep emerald green brocade with royal Mughal-inspired floral pattern reliefs.",
+          "url": "/images/sherwani-client-2.png",
+          "thumbnail": "/images/sherwani-client-2.png",
+          "subtitle": "Luxurious sherwani fabric with ornate detailing — tailored for unforgettable celebrations.",
           "focalPoint": { "x": 50, "y": 30 }
-        },
-        {
-          "type": "image",
-          "url": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "High structured collars completed with custom hand-carved designer buttons.",
-          "focalPoint": { "x": 50, "y": 40 }
         }
       ]
     }

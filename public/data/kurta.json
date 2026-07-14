@@ -1,58 +1,7 @@
 {
-  "id": "signature-kurta",
+  "id": "designer-kurta",
   "title": "Kurta",
-  "description": "Crafted for Handcrafted Comfort.",
-  "heroImage": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1200&q=80",
-  "items": [
-    {
-      "id": "kurta-1",
-      "title": "Mayfair Linen Pathani",
-      "subtitle": "Premium breathable grey linen styled with structured shoulder epaulets.",
-      "heroMedia": {
-        "type": "image",
-        "url": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1200&q=80"
-      },
-      "media": [
-        {
-          "type": "image",
-          "url": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Premium breathable grey linen styled with structured shoulder epaulets.",
-          "focalPoint": { "x": 50, "y": 40 }
-        },
-        {
-          "type": "video",
-          "url": "https://assets.mixkit.co/videos/preview/mixkit-sewing-machine-needle-in-slow-motion-41615-large.mp4",
-          "thumbnail": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Heavy-duty thread stitch locking for robust daily and festive wear.",
-          "focalPoint": { "x": 50, "y": 50 }
-        }
-      ]
-    },
-    {
-      "id": "kurta-2",
-      "title": "Raw Silk Bandhgala",
-      "subtitle": "A majestic cream raw silk waistcoat topped with hand-carved copper buttons.",
-      "heroMedia": {
-        "type": "image",
-        "url": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1200&q=80"
-      },
-      "media": [
-        {
-          "type": "image",
-          "url": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "A majestic cream raw silk waistcoat topped with hand-carved copper buttons.",
-          "focalPoint": { "x": 50, "y": 30 }
-        },
-        {
-          "type": "image",
-          "url": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1200&q=80",
-          "thumbnail": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=150&q=80",
-          "subtitle": "Perfect drape falls custom drafted to match your exact build.",
-          "focalPoint": { "x": 50, "y": 50 }
-        }
-      ]
-    }
-  ]
+  "description": "Bespoke Ethnic & Festive Kurtas.",
+  "heroImage": "/images/luxury-hero.png",
+  "items": []
 }

@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { 
-  motion, 
-  AnimatePresence, 
-  useScroll, 
-  useTransform, 
-  useMotionValue, 
-  useSpring 
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+  useMotionValue,
+  useSpring
 } from "framer-motion";
 import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { getImageUrl } from "@/utils/image";
@@ -40,14 +40,14 @@ interface CollectionData {
 }
 
 // Fullscreen Immersive Lightbox Media Viewer
-function FullscreenLightbox({ 
-  item, 
-  initialIndex, 
-  onClose 
-}: { 
-  item: CollectionItem; 
-  initialIndex: number; 
-  onClose: () => void; 
+function FullscreenLightbox({
+  item,
+  initialIndex,
+  onClose
+}: {
+  item: CollectionItem;
+  initialIndex: number;
+  onClose: () => void;
 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -101,7 +101,7 @@ function FullscreenLightbox({
             Media {currentIndex + 1} of {mediaCount}
           </span>
         </div>
-        <button 
+        <button
           onClick={onClose}
           className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors pointer-events-auto"
         >
@@ -110,15 +110,15 @@ function FullscreenLightbox({
       </div>
 
       {/* Left Desktop Arrow */}
-      <button 
+      <button
         onClick={handlePrev}
         className="hidden md:flex absolute left-8 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white transition-colors z-50"
       >
         <ChevronLeft size={20} />
       </button>
 
-      {/* Main Media Slide Container */}
-      <div className="relative w-full max-w-5xl h-[70vh] flex items-center justify-center z-40 px-6">
+      {/* Main Media Slide Container — fills entire lightbox */}
+      <div className="absolute inset-0 z-40">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
@@ -138,24 +138,22 @@ function FullscreenLightbox({
                 className="max-w-full max-h-full object-contain pointer-events-none rounded-sm shadow-2xl"
               />
             ) : (
-              <div className="relative max-w-full max-h-full aspect-video flex items-center justify-center">
-                <video
-                  src={activeMedia.url}
-                  className="w-full h-full object-contain rounded-sm shadow-2xl"
-                  autoPlay={isPlaying}
-                  controls
-                  muted
-                  playsInline
-                  loop
-                />
-              </div>
+              <video
+                key={activeMedia.url}
+                src={activeMedia.url}
+                className="w-full h-full object-cover"
+                autoPlay
+                muted
+                playsInline
+                loop
+              />
             )}
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* Right Desktop Arrow */}
-      <button 
+      <button
         onClick={handleNext}
         className="hidden md:flex absolute right-8 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white transition-colors z-50"
       >
@@ -189,11 +187,10 @@ function FullscreenLightbox({
                   setCurrentIndex(mIdx);
                   setIsPlaying(true);
                 }}
-                className={`relative w-10 h-10 rounded-sm overflow-hidden transition-all duration-300 ${
-                  isSelected 
-                    ? "ring-2 ring-luxury-gold scale-105" 
-                    : "opacity-60 hover:opacity-100 border border-white/5"
-                }`}
+                className={`relative w-10 h-10 rounded-sm overflow-hidden transition-all duration-300 ${isSelected
+                  ? "ring-2 ring-luxury-gold scale-105"
+                  : "opacity-60 hover:opacity-100 border border-white/5"
+                  }`}
               >
                 <img
                   src={mediaItem.thumbnail}
@@ -215,14 +212,14 @@ function FullscreenLightbox({
 }
 
 // Child component to manage each collection campaign product (Exactly 1 fullscreen viewport height)
-function ProductCampaign({ 
-  item, 
-  index, 
-  onOpenLightbox 
-}: { 
-  item: CollectionItem; 
-  index: number; 
-  onOpenLightbox: (activeMediaIdx: number) => void; 
+function ProductCampaign({
+  item,
+  index,
+  onOpenLightbox
+}: {
+  item: CollectionItem;
+  index: number;
+  onOpenLightbox: (activeMediaIdx: number) => void;
 }) {
   const isEven = index % 2 === 0;
 
@@ -231,14 +228,14 @@ function ProductCampaign({
 
   // Load the primary hero media item
   const primaryMedia = item.media[0] || { type: "image", url: item.heroMedia.url, focalPoint: { x: 50, y: 50 } };
-  const focalStyles = primaryMedia.focalPoint 
-    ? `${primaryMedia.focalPoint.x}% ${primaryMedia.focalPoint.y}%` 
+  const focalStyles = primaryMedia.focalPoint
+    ? `${primaryMedia.focalPoint.x}% ${primaryMedia.focalPoint.y}%`
     : "center";
 
   return (
     <div className="relative h-screen w-full flex items-center justify-center border-b border-white/5 bg-luxury-black overflow-hidden py-12 md:py-0 select-none">
-      
-      {/* Full-bleed background media cover (as before, unblurred at 30% opacity to blend into the luxury black backdrop) */}
+
+      {/* Full-bleed background media cover (unblurred at 55% opacity to blend into the luxury black backdrop) */}
       <div 
         onClick={() => onOpenLightbox(0)}
         className="absolute inset-0 z-0 w-full h-full select-none overflow-hidden cursor-zoom-in"
@@ -248,13 +245,13 @@ function ProductCampaign({
             src={getImageUrl(primaryMedia.url)}
             alt="Background Cover"
             style={{ objectPosition: focalStyles }}
-            className="w-full h-full object-cover opacity-30 transition-transform duration-10000 ease-out scale-100"
+            className="w-full h-full object-cover opacity-55 transition-transform duration-10000 ease-out scale-100"
           />
         ) : (
           <video
             src={primaryMedia.url}
             style={{ objectPosition: focalStyles }}
-            className="w-full h-full object-cover opacity-30"
+            className="w-full h-full object-cover opacity-55"
             autoPlay
             muted
             loop
@@ -262,21 +259,20 @@ function ProductCampaign({
           />
         )}
         {/* Soft layout shading gradients for cinematic bleed */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-black pointer-events-none" />
       </div>
 
       {/* Grid container layout */}
       <div className="max-w-7xl mx-auto px-6 w-full h-full grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center relative z-20">
-        
+
         {/* Editorial Text Overlay Column */}
-        <div className={`col-span-12 md:col-span-5 flex flex-col space-y-4 md:space-y-6 order-2 md:order-none pointer-events-auto ${
-          isEven ? "text-left" : "md:col-start-8 text-right items-end ml-auto"
-        }`}>
+        <div className={`col-span-12 md:col-span-5 flex flex-col space-y-4 md:space-y-6 order-2 md:order-none pointer-events-auto ${isEven ? "text-left" : "md:col-start-8 text-right items-end ml-auto"
+          }`}>
           <span className="text-[10px] tracking-[0.3em] font-sans text-luxury-gold uppercase font-bold flex items-center gap-2">
             <Sparkles size={12} />
             Model 0{index + 1}
           </span>
-          
+
           <h2 className="text-4xl md:text-5xl xl:text-6xl font-light tracking-wider font-serif text-white uppercase leading-tight">
             {item.title}
           </h2>
@@ -292,15 +288,14 @@ function ProductCampaign({
 
         {/* Cinematic Framed Photo Box Column */}
         <div className={`col-span-12 md:col-span-7 flex justify-center order-1 md:order-none`}>
-          
+
           {/* Outer double-border frame with luxury gold glow drop shadow */}
-          <div 
+          <div
             onClick={() => onOpenLightbox(0)}
-            className={`cursor-zoom-in relative p-1.5 bg-[#09090b]/85 border border-white/20 rounded-sm shadow-[0_0_30px_rgba(197,168,128,0.25)] hover:shadow-[0_0_45px_rgba(197,168,128,0.4)] transition-all duration-700 hover:scale-[1.01] pointer-events-auto ${
-              isLandscape 
-                ? "w-full max-w-[480px] sm:max-w-[560px] aspect-[16/10]" 
-                : "w-[260px] sm:w-[320px] md:w-[360px] aspect-[3/4]"
-            }`}
+            className={`cursor-zoom-in relative p-1.5 bg-[#09090b]/85 border border-white/20 rounded-sm shadow-[0_0_30px_rgba(197,168,128,0.25)] hover:shadow-[0_0_45px_rgba(197,168,128,0.4)] transition-all duration-700 hover:scale-[1.01] pointer-events-auto ${isLandscape
+              ? "w-full max-w-[480px] sm:max-w-[560px] aspect-[16/10]"
+              : "w-[260px] sm:w-[320px] md:w-[360px] aspect-[3/4]"
+              }`}
           >
             {/* Inner keyline border */}
             <div className="w-full h-full border border-white/10 rounded-sm overflow-hidden relative">
@@ -322,10 +317,10 @@ function ProductCampaign({
                   playsInline
                 />
               )}
-              
+
               {/* Soft vignette overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-              
+
               {/* Play symbol indicator overlay for video cards */}
               {primaryMedia.type === "video" && (
                 <div className="absolute bottom-4 right-4 p-2 bg-black/60 border border-white/10 rounded-full text-white/90">
@@ -346,17 +341,15 @@ export default function Home() {
   const { isLoading: isSettingsLoading } = useSettings();
   const [activeCategory, setActiveCategory] = useState<string>("suits");
   const [collection, setCollection] = useState<CollectionData | null>(null);
-  const [pageLimit, setPageLimit] = useState<number>(5);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Lightbox view state manager
   const [lightboxActiveProduct, setLightboxActiveProduct] = useState<CollectionItem | null>(null);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
 
-  // 1. Fetch category dataset from JSON
+  // 1. Fetch category dataset from JSON + merge admin uploaded products from localStorage
   useEffect(() => {
     setIsLoading(true);
-    setPageLimit(5); // Reset scroll batches on category swap
     fetch(`/data/${activeCategory}.json`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load collection dataset");
@@ -386,65 +379,40 @@ export default function Home() {
   // 3. Parallax scroll bindings for storefront hero backdrop
   const { scrollY } = useScroll();
   const heroImageParallax = useTransform(scrollY, [0, 500], [0, -50]);
+  const heroImageScale = useTransform(scrollY, [0, 500], [1, 1.15]);
 
-  // 4. Infinite Scroll Sentinel Observer
-  useEffect(() => {
-    if (!collection || collection.items.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPageLimit((prev) => prev + 5);
-        }
-      },
-      { threshold: 0.1, rootMargin: "200px" }
-    );
-
-    const target = document.getElementById("infinite-scroll-sentinel");
-    if (target) observer.observe(target);
-
-    return () => {
-      if (target) observer.unobserve(target);
-    };
-  }, [collection, pageLimit]);
-
-  // 5. Scroll navigation action triggers
+  // 4. Scroll navigation action triggers
   const scrollToCampaignGallery = () => {
     const galleryElement = document.getElementById("campaign-gallery-root");
     if (galleryElement) {
-      const yOffset = -56 - 24; // Selector Height (56px) + margin offset (24px)
+      const yOffset = -56 - 24;
       const y = galleryElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: "smooth" });
     }
   };
 
-  // 6. Infinite Loop List Builder (Concatenates copy items safely when exceeding total limit)
-  const getLoadedItems = (): CollectionItem[] => {
-    if (!collection || !collection.items || collection.items.length === 0) return [];
-    
-    const allItems = collection.items;
-    const result: CollectionItem[] = [];
-    const repetitions = Math.ceil(pageLimit / allItems.length);
-    
-    for (let i = 0; i < repetitions; i++) {
-      const mapped = allItems.map((item, idx) => ({
-        ...item,
-        uniqueId: `${item.id}-rep-${i}-${idx}`
-      }));
-      result.push(...mapped);
-    }
-    
-    return result.slice(0, pageLimit);
-  };
+  // 5. Merge admin-uploaded localStorage products with static JSON items
+  const adminItems: CollectionItem[] = (() => {
+    try {
+      const raw = localStorage.getItem(`fashionking_products_${activeCategory}`);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  })();
 
-  const loadedItems = getLoadedItems();
+  const jsonItems = collection?.items || [];
+  const mergedItems = [...adminItems, ...jsonItems];
+
+  const loadedItems = mergedItems.map((item, idx) => ({
+    ...item,
+    uniqueId: `${item.id}-${idx}`
+  }));
 
   // Custom uppercase labels matching the selector in your attachment image
   const categories = [
-    { id: "suits", label: "GROOM" },
-    { id: "sherwani", label: "WEDDING" },
+    { id: "suits", label: "SUITS" },
+    { id: "sherwani", label: "SHERWANI" },
     { id: "kurta", label: "KURTA" },
-    { id: "fabrics", label: "FABRICS" },
+    { id: "fabrics", label: "FORMALS" },
   ];
 
   // Loading spinner layout
@@ -483,12 +451,11 @@ export default function Home() {
       {/* Background container to isolate and clip off-screen glowing spotlights, preventing layout scroll stretches */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10 select-none">
         {/* Dynamic backdrop color highlights relative to category tab */}
-        <div className={`absolute inset-0 bg-gradient-to-tr transition-colors duration-1000 ${
-          activeCategory === "suits" ? "from-[#050608] via-zinc-950 to-[#06101c]/10" :
+        <div className={`absolute inset-0 bg-gradient-to-tr transition-colors duration-1000 ${activeCategory === "suits" ? "from-[#050608] via-zinc-950 to-[#06101c]/10" :
           activeCategory === "sherwani" ? "from-[#080505] via-zinc-950 to-[#1c0808]/10" :
-          activeCategory === "kurta" ? "from-[#080705] via-zinc-950 to-[#1f160d]/10" :
-          "from-black via-zinc-950 to-neutral-950/20"
-        }`} />
+            activeCategory === "kurta" ? "from-[#080705] via-zinc-950 to-[#1f160d]/10" :
+              "from-black via-zinc-950 to-neutral-950/20"
+          }`} />
 
         {/* Ambient Glowing cursor spotlight */}
         <motion.div
@@ -506,11 +473,11 @@ export default function Home() {
       </div>
 
       {/* SECTION 1: Fullscreen Official Storefront Landing Hero */}
-      <div className="h-[calc(100vh-112px)] w-full flex items-center justify-center max-w-7xl mx-auto px-6 relative z-20">
-        
+      <div className="min-h-[70vh] sm:h-[calc(100vh-112px)] w-full flex items-center justify-center max-w-7xl mx-auto px-6 relative z-20 py-10 sm:py-0">
+
         {/* Centered official showroom copy overlay */}
         <div className="flex flex-col items-center justify-center text-center space-y-6 max-w-3xl select-none">
-          
+
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -574,26 +541,24 @@ export default function Home() {
 
         </div>
 
-        {/* Storefront backdrop image (parallax enabled, brightness-75 to keep neon sign highly readable) */}
-        <motion.div 
-          style={{ y: heroImageParallax }}
-          className="absolute inset-0 z-0 select-none overflow-hidden pointer-events-none"
-        >
-          <img
+        {/* Storefront backdrop image (parallax and zoom enabled, adjusted brightness to be more readable and visible) */}
+        <div className="absolute inset-0 z-0 select-none overflow-hidden pointer-events-none">
+          <motion.img
             src={getImageUrl("/images/signboard.png")}
             alt="Fashion King Storefront Sign"
-            className="w-full h-full object-cover filter brightness-[0.72] contrast-[1.03] saturate-[0.95]"
+            style={{ y: heroImageParallax, scale: heroImageScale, transformOrigin: "top" }}
+            className="w-full h-full object-cover max-md:object-contain object-top filter brightness-[0.88] contrast-[1.03] saturate-[0.95]"
           />
           {/* Soft gradients only, ensuring sign remains readable */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0.65)_100%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.35)_100%)] pointer-events-none" />
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-luxury-black to-transparent pointer-events-none" />
-        </motion.div>
+        </div>
       </div>
 
       {/* SECTION 2: Sticky selector capsule pill bar (height 56px, pins at top-6 on scroll) */}
       <div className="sticky top-6 z-40 w-full flex justify-center py-3 select-none pointer-events-none">
         <div className="pointer-events-auto flex items-center space-x-1 md:space-x-2 bg-[#09090b]/80 border border-white/5 px-4 md:px-6 py-2.5 rounded-full backdrop-blur-lg shadow-2xl relative">
-          
+
           {categories.map((cat) => {
             const isActive = activeCategory === cat.id;
 
@@ -604,9 +569,8 @@ export default function Home() {
                   setActiveCategory(cat.id);
                   setTimeout(scrollToCampaignGallery, 50);
                 }}
-                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold transition-colors duration-500 outline-none ${
-                  isActive ? "text-black" : "text-zinc-500 hover:text-zinc-200"
-                }`}
+                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold transition-colors duration-500 outline-none ${isActive ? "text-black" : "text-zinc-500 hover:text-zinc-200"
+                  }`}
               >
                 {isActive && (
                   <motion.span
@@ -640,19 +604,43 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* SECTION 3: Campaign Lookbook - Vertical scroll only updates product sections */}
+      {/* SECTION 3: Campaign Lookbook */}
       <div id="campaign-gallery-root" className="w-full relative z-10 bg-black">
-        {loadedItems.map((item, index) => (
-          <ProductCampaign
-            key={item.uniqueId}
-            item={item}
-            index={index}
-            onOpenLightbox={(initialMediaIdx) => {
-              setLightboxActiveProduct(item);
-              setLightboxInitialIndex(initialMediaIdx);
-            }}
-          />
-        ))}
+        {loadedItems.length === 0 && !isLoading ? (
+          /* ── Empty State ── */
+          <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-24 space-y-6 border-t border-white/5">
+            <div className="w-20 h-20 rounded-full bg-white/5 border border-luxury-gold/10 flex items-center justify-center">
+              <motion.div
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Sparkles size={24} className="text-luxury-gold/60" />
+              </motion.div>
+            </div>
+            <div className="space-y-2 max-w-sm">
+              <h3 className="text-lg font-serif font-light tracking-widest text-white uppercase">
+                Collection Coming Soon
+              </h3>
+              <p className="text-xs text-zinc-500 font-light leading-relaxed tracking-wider">
+                Our curated lookbook for this collection is being prepared.
+                Visit us in store or check back soon.
+              </p>
+            </div>
+            <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-luxury-gold/30 to-transparent" />
+          </div>
+        ) : (
+          loadedItems.map((item, index) => (
+            <ProductCampaign
+              key={item.uniqueId}
+              item={item}
+              index={index}
+              onOpenLightbox={(initialMediaIdx) => {
+                setLightboxActiveProduct(item);
+                setLightboxInitialIndex(initialMediaIdx);
+              }}
+            />
+          ))
+        )}
       </div>
 
       {/* SECTION 4: Immersive Fullscreen Lightbox Portal */}
@@ -665,14 +653,6 @@ export default function Home() {
           />
         )}
       </AnimatePresence>
-
-      {/* Bottom infinite scroll target */}
-      <div id="infinite-scroll-sentinel" className="h-20 w-full flex items-center justify-center py-10 relative z-10 bg-black">
-        <div className="flex items-center space-x-2 text-zinc-600 text-xs tracking-widest uppercase font-sans select-none">
-          <span>Loading next segment</span>
-          <span className="w-1.5 h-1.5 bg-luxury-gold rounded-full animate-ping" />
-        </div>
-      </div>
     </div>
   );
 }
