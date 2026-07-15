@@ -9,7 +9,7 @@ import {
 } from "framer-motion";
 import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { getImageUrl } from "@/utils/image";
-import { useSettings } from "@/hooks/useDbQueries";
+import { useSettings, useProducts } from "@/hooks/useDbQueries";
 
 interface MediaItem {
   type: "image" | "video";
@@ -395,13 +395,9 @@ export default function Home() {
     }
   };
 
-  // 5. Merge admin-uploaded localStorage products with static JSON items
-  const adminItems: CollectionItem[] = (() => {
-    try {
-      const raw = localStorage.getItem(`fashionking_products_${activeCategory}`);
-      return raw ? JSON.parse(raw) : [];
-    } catch { return []; }
-  })();
+  // 5. Query dynamic products from Supabase/localStorage and merge with static JSON items
+  const { data: dbProducts = [] } = useProducts(activeCategory);
+  const adminItems: CollectionItem[] = dbProducts;
 
   const jsonItems = collection?.items || [];
   const mergedItems = [...adminItems, ...jsonItems];

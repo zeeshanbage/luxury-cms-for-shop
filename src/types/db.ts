@@ -96,3 +96,20 @@ export interface DbService {
   image_url?: string;
   sort_order?: number;
 }
+
+export interface MediaItem {
+  type: "image" | "video";
+  url: string;
+  thumbnail: string;
+  subtitle: string;
+}
+
+export interface Product {
+  id: string;
+  title: string;
+  subtitle: string;
+  heroMedia: { type: "image" | "video"; url: string };
+  media: MediaItem[];
+  uniqueId?: string;
+}
+

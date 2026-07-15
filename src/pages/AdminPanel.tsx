@@ -2,22 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface MediaItem {
-  type: "image" | "video";
-  url: string;
-  thumbnail: string;
-  subtitle: string;
-}
-
-interface Product {
-  id: string;
-  title: string;
-  subtitle: string;
-  heroMedia: { type: "image" | "video"; url: string };
-  media: MediaItem[];
-  uniqueId?: string;
-}
+import type { Product } from "@/types/db";
+import { getProducts, createProduct, deleteProduct } from "@/services/db";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const ADMIN_PASSWORD = "admin1188";
@@ -27,23 +13,6 @@ const CATEGORIES = [
   { id: "kurta",    label: "Kurta",    file: "kurta"    },
   { id: "fabrics",  label: "Fabrics",  file: "fabrics"  },
 ];
-
-function storageKey(categoryId: string) {
-  return `fashionking_products_${categoryId}`;
-}
-
-function loadProducts(categoryId: string): Product[] {
-  try {
-    const raw = localStorage.getItem(storageKey(categoryId));
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveProducts(categoryId: string, products: Product[]) {
-  localStorage.setItem(storageKey(categoryId), JSON.stringify(products));
-}
 
 // ─── File → base64 URL ───────────────────────────────────────────────────────
 function fileToDataUrl(file: File): Promise<string> {
@@ -130,12 +99,10 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
 // ─── Add Product Form ─────────────────────────────────────────────────────────
 function AddProductForm({
-  categoryId,
   onSave,
   onCancel,
 }: {
-  categoryId: string;
-  onSave: (product: Product) => void;
+  onSave: (productMetadata: { title: string; subtitle: string; mediaType: "image" | "video" }, file: File) => Promise<void>;
   onCancel: () => void;
 }) {
   const [title, setTitle] = useState("");
@@ -169,28 +136,17 @@ function AddProductForm({
   };
 
   const handleSave = async () => {
-    if (!title.trim() || !preview) return;
+    if (!title.trim() || !preview || !_file) return;
     setSaving(true);
-
-    const product: Product = {
-      id: `${categoryId}-${Date.now()}`,
-      title: title.trim(),
-      subtitle: subtitle.trim(),
-      heroMedia: { type: fileType, url: preview },
-      media: [
-        {
-          type: fileType,
-          url: preview,
-          thumbnail: fileType === "image" ? preview : "/images/brand-logo.png",
-          subtitle: subtitle.trim(),
-        },
-      ],
-    };
-
-    onSave(product);
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => { setSaved(false); onCancel(); }, 900);
+    try {
+      await onSave({ title: title.trim(), subtitle: subtitle.trim(), mediaType: fileType }, _file);
+      setSaved(true);
+      setTimeout(() => { setSaved(false); onCancel(); }, 900);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const canSave = title.trim().length > 0 && preview !== "";
@@ -371,23 +327,54 @@ export default function AdminPanel() {
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
   const [products, setProducts] = useState<Product[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
-  // Load products for active category from localStorage
+  // Fetch products for the active category
   useEffect(() => {
-    setProducts(loadProducts(activeCategory));
+    let active = true;
+    async function load() {
+      const list = await getProducts(activeCategory);
+      if (active) {
+        setProducts(list);
+      }
+    }
+    load();
     setShowAddForm(false);
+    return () => {
+      active = false;
+    };
   }, [activeCategory]);
 
-  const handleAdd = (product: Product) => {
-    const updated = [product, ...products];
-    setProducts(updated);
-    saveProducts(activeCategory, updated);
+  // Load counts for all categories on mount or when products list changes
+  useEffect(() => {
+    let active = true;
+    async function loadCounts() {
+      const counts: Record<string, number> = {};
+      for (const cat of CATEGORIES) {
+        const list = await getProducts(cat.id);
+        counts[cat.id] = list.length;
+      }
+      if (active) {
+        setCategoryCounts(counts);
+      }
+    }
+    loadCounts();
+    return () => {
+      active = false;
+    };
+  }, [products]);
+
+  const handleAdd = async (
+    productMetadata: { title: string; subtitle: string; mediaType: "image" | "video" },
+    file: File
+  ) => {
+    const newProd = await createProduct(activeCategory, productMetadata, file);
+    setProducts((prev) => [newProd, ...prev]);
   };
 
-  const handleDelete = (productId: string) => {
-    const updated = products.filter(p => p.id !== productId);
-    setProducts(updated);
-    saveProducts(activeCategory, updated);
+  const handleDelete = async (productId: string) => {
+    await deleteProduct(productId, activeCategory);
+    setProducts((prev) => prev.filter((p) => p.id !== productId));
   };
 
   const handleLogout = () => {
@@ -426,7 +413,7 @@ export default function AdminPanel() {
         {/* Category Tabs */}
         <div className="flex items-center gap-2 flex-wrap">
           {CATEGORIES.map((cat) => {
-            const count = loadProducts(cat.id).length;
+            const count = categoryCounts[cat.id] ?? 0;
             return (
               <button
                 key={cat.id}
@@ -449,7 +436,7 @@ export default function AdminPanel() {
         {/* Add button row */}
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-serif font-light tracking-wider text-white uppercase">
-            {CATEGORIES.find(c => c.id === activeCategory)?.label} Collection
+            {CATEGORIES.find((c) => c.id === activeCategory)?.label} Collection
           </h2>
           {!showAddForm && (
             <button
@@ -465,7 +452,6 @@ export default function AdminPanel() {
         <AnimatePresence>
           {showAddForm && (
             <AddProductForm
-              categoryId={activeCategory}
               onSave={handleAdd}
               onCancel={() => setShowAddForm(false)}
             />

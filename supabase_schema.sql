@@ -157,3 +157,18 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO services (id, title, price, description, icon, features, sort_order) VALUES
 ('visiting-tailor', 'Visiting Tailor Service', 'On Demand', 'A private fitting consultant travels directly to your residence or hotel in Beed district to measure and consult on wedding packages.', 'Users', ARRAY['Private measuring session at your home', 'Complete fabric swatches brought to you', 'Saves time for busy grooms'], 10)
 ON CONFLICT (id) DO NOTHING;
+
+-- 6. PRODUCTS TABLE (Admin-uploaded lookbook / collection campaign items)
+CREATE TABLE IF NOT EXISTS products (
+    id VARCHAR(100) PRIMARY KEY,
+    category_id VARCHAR(100) NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    subtitle TEXT,
+    media_type VARCHAR(50) NOT NULL, -- 'image' or 'video'
+    url TEXT NOT NULL,
+    thumbnail TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Note: Ensure to create a public storage bucket named "products" in the Supabase console.
+

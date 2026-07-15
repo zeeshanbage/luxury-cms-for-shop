@@ -5,6 +5,7 @@ import {
   getGallery,
   getTestimonials,
   getServices,
+  getProducts,
 } from "@/services/db";
 
 // Cache settings: configuration datasets are relatively static, 
@@ -50,3 +51,12 @@ export function useServices() {
     staleTime: DEFAULT_STALE_TIME,
   });
 }
+
+export function useProducts(categoryId: string) {
+  return useQuery({
+    queryKey: ["products", categoryId],
+    queryFn: () => getProducts(categoryId),
+    staleTime: 1000 * 60 * 2, // 2 minutes (shorter for product updates)
+  });
+}
+
