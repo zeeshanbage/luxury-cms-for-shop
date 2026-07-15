@@ -33,34 +33,42 @@ async function run() {
   try {
     await client.connect();
 
-    // Enable policies for the storage.objects table to allow anon writes to "products" bucket
-    console.log('Creating storage RLS policies...');
+    // Enable policies for the storage.objects table and products table to allow anon access
+    console.log('Creating database & storage RLS policies...');
     const sql = `
-      -- 1. Drop existing policies to prevent naming conflict errors
+      -- A. Storage RLS Policies
       DROP POLICY IF EXISTS "Allow public uploads to products bucket" ON storage.objects;
       DROP POLICY IF EXISTS "Allow public select from products bucket" ON storage.objects;
       DROP POLICY IF EXISTS "Allow public delete from products bucket" ON storage.objects;
 
-      -- 2. Allow anonymous uploads to the 'products' bucket
       CREATE POLICY "Allow public uploads to products bucket" ON storage.objects
-      FOR INSERT
-      TO public
-      WITH CHECK (bucket_id = 'products');
+      FOR INSERT TO public WITH CHECK (bucket_id = 'products');
 
-      -- 3. Allow anonymous reads from the 'products' bucket
       CREATE POLICY "Allow public select from products bucket" ON storage.objects
-      FOR SELECT
-      TO public
-      USING (bucket_id = 'products');
+      FOR SELECT TO public USING (bucket_id = 'products');
 
-      -- 4. Allow anonymous deletes from the 'products' bucket (for when products are removed)
       CREATE POLICY "Allow public delete from products bucket" ON storage.objects
-      FOR DELETE
-      TO public
-      USING (bucket_id = 'products');
+      FOR DELETE TO public USING (bucket_id = 'products');
+
+      -- B. Products Table RLS Policies
+      -- Enable RLS just in case it is disabled or needs to be active
+      ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+
+      DROP POLICY IF EXISTS "Allow public select on products" ON products;
+      DROP POLICY IF EXISTS "Allow public insert on products" ON products;
+      DROP POLICY IF EXISTS "Allow public delete on products" ON products;
+
+      CREATE POLICY "Allow public select on products" ON products
+      FOR SELECT TO public USING (true);
+
+      CREATE POLICY "Allow public insert on products" ON products
+      FOR INSERT TO public WITH CHECK (true);
+
+      CREATE POLICY "Allow public delete on products" ON products
+      FOR DELETE TO public USING (true);
     `;
     await client.query(sql);
-    console.log('✅ Storage bucket policies updated successfully! Anyone can now upload/delete lookbook items.');
+    console.log('✅ Database and Storage policies updated successfully! Anyone can now upload/read/delete lookbook items.');
   } catch (err) {
     console.error('❌ Failed to update storage policies:', err);
   } finally {
