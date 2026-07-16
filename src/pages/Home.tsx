@@ -10,34 +10,7 @@ import {
 import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { getImageUrl } from "@/utils/image";
 import { useSettings, useProducts } from "@/hooks/useDbQueries";
-
-interface MediaItem {
-  type: "image" | "video";
-  url: string;
-  thumbnail: string;
-  subtitle: string;
-  focalPoint?: { x: number; y: number };
-}
-
-interface CollectionItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  heroMedia: {
-    type: "image" | "video";
-    url: string;
-  };
-  media: MediaItem[];
-  uniqueId?: string;
-}
-
-interface CollectionData {
-  id: string;
-  title: string;
-  description: string;
-  heroImage: string;
-  items: CollectionItem[];
-}
+import type { Product } from "@/types/db";
 
 // Fullscreen Immersive Lightbox Media Viewer
 function FullscreenLightbox({
@@ -45,7 +18,7 @@ function FullscreenLightbox({
   initialIndex,
   onClose
 }: {
-  item: CollectionItem;
+  item: Product;
   initialIndex: number;
   onClose: () => void;
 }) {
@@ -213,7 +186,7 @@ function ProductCampaign({
   index,
   onOpenLightbox
 }: {
-  item: CollectionItem;
+  item: Product;
   index: number;
   onOpenLightbox: (activeMediaIdx: number) => void;
 }) {
@@ -259,7 +232,7 @@ function ProductCampaign({
       </div>
 
       {/* Grid container layout */}
-      <div className="max-w-7xl mx-auto px-6 w-full h-full grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center relative z-20">
+      <div className="max-w-7xl mx-auto px-6 w-full h-full grid grid-cols-1 md:grid-cols-12 md:grid-flow-row-dense gap-8 md:gap-16 items-center relative z-20">
 
         {/* Editorial Text Overlay Column */}
         <div className={`col-span-12 md:col-span-5 flex flex-col space-y-4 md:space-y-6 order-2 md:order-none pointer-events-auto ${isEven ? "text-left" : "md:col-start-8 text-right items-end ml-auto"
@@ -336,11 +309,9 @@ function ProductCampaign({
 export default function Home() {
   const { isLoading: isSettingsLoading } = useSettings();
   const [activeCategory, setActiveCategory] = useState<string>("suits");
-  // Cache all 4 categories so switching is instant — no re-fetch on tab tap
-  const [collectionCache, setCollectionCache] = useState<Record<string, CollectionData>>({});
 
   // Lightbox view state manager
-  const [lightboxActiveProduct, setLightboxActiveProduct] = useState<CollectionItem | null>(null);
+  const [lightboxActiveProduct, setLightboxActiveProduct] = useState<Product | null>(null);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
 
   const categories = [
@@ -349,25 +320,6 @@ export default function Home() {
     { id: "kurta", label: "KURTA" },
     { id: "fabrics", label: "FORMALS" },
   ];
-
-  // 1. Preload ALL categories in parallel at mount — zero wait on tab switch
-  useEffect(() => {
-    Promise.all(
-      categories.map((cat) =>
-        fetch(`/data/${cat.id}.json`)
-          .then((r) => r.json())
-          .then((data: CollectionData) => ({ id: cat.id, data }))
-          .catch(() => ({ id: cat.id, data: { id: cat.id, title: cat.label, description: "", heroImage: "", items: [] } as CollectionData }))
-      )
-    ).then((results) => {
-      const cache: Record<string, CollectionData> = {};
-      results.forEach(({ id, data }) => { cache[id] = data; });
-      setCollectionCache(cache);
-    });
-  }, []);
-
-  const collection = collectionCache[activeCategory] ?? null;
-  const isLoading = Object.keys(collectionCache).length === 0;
 
   // 2. Mouse coordinates tracking for ambient cursor spotlight glow
   const mouseX = useMotionValue(0);
@@ -395,20 +347,16 @@ export default function Home() {
     }
   };
 
-  // 5. Query dynamic products from Supabase/localStorage and merge with static JSON items
-  const { data: dbProducts = [] } = useProducts(activeCategory);
-  const adminItems: CollectionItem[] = dbProducts;
+  // 5. Query dynamic products directly from Supabase (single source of truth)
+  const { data: dbProducts = [], isLoading: isProductsLoading } = useProducts(activeCategory);
 
-  const jsonItems = collection?.items || [];
-  const mergedItems = [...adminItems, ...jsonItems];
-
-  const loadedItems = mergedItems.map((item, idx) => ({
+  const loadedItems = dbProducts.map((item, idx) => ({
     ...item,
     uniqueId: `${item.id}-${idx}`
   }));
 
   // Loading spinner layout
-  if (isSettingsLoading || !collection) {
+  if (isSettingsLoading || isProductsLoading) {
     return (
       <div className="h-screen w-full bg-black flex flex-col items-center justify-center space-y-6">
         <motion.div
@@ -593,7 +541,7 @@ export default function Home() {
             }}
             style={{ willChange: "opacity, transform" }}
           >
-            {loadedItems.length === 0 && !isLoading ? (
+            {loadedItems.length === 0 && !isProductsLoading ? (
               /* ── Empty State ── */
               <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-24 space-y-6 border-t border-white/5">
                 <div className="w-20 h-20 rounded-full bg-white/5 border border-luxury-gold/10 flex items-center justify-center">

@@ -102,6 +102,7 @@ export interface MediaItem {
   url: string;
   thumbnail: string;
   subtitle: string;
+  focalPoint?: { x: number; y: number };
 }
 
 export interface Product {

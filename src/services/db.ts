@@ -192,40 +192,36 @@ export async function uploadProductMedia(file: File, categoryId: string): Promis
 }
 
 export async function getProducts(categoryId: string): Promise<Product[]> {
-  try {
-    if (!supabase) throw new Error("Supabase client not initialized");
-
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .eq("category_id", categoryId)
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
-    return (data || []).map((row) => ({
-      id: row.id,
-      title: row.title,
-      subtitle: row.subtitle || "",
-      heroMedia: { type: row.media_type as "image" | "video", url: row.url },
-      media: [
-        {
-          type: row.media_type as "image" | "video",
-          url: row.url,
-          thumbnail: row.thumbnail || (row.media_type === "video" ? "/images/brand-logo.png" : row.url),
-          subtitle: row.subtitle || "",
-        },
-      ],
-    }));
-  } catch (err) {
-    console.warn(`[DB Service] getProducts failed for category "${categoryId}". Falling back to localStorage.`, err);
-    try {
-      const raw = localStorage.getItem(`fashionking_products_${categoryId}`);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
+  if (!supabase) {
+    console.warn(`[DB Service] Supabase not initialized. Cannot fetch products for "${categoryId}".`);
+    return [];
   }
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("category_id", categoryId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(`[DB Service] Error fetching products for "${categoryId}":`, error);
+    throw error;
+  }
+
+  return (data || []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    subtitle: row.subtitle || "",
+    heroMedia: { type: row.media_type as "image" | "video", url: row.url },
+    media: [
+      {
+        type: row.media_type as "image" | "video",
+        url: row.url,
+        thumbnail: row.thumbnail || (row.media_type === "video" ? "/images/brand-logo.png" : row.url),
+        subtitle: row.subtitle || "",
+      },
+    ],
+  }));
 }
 
 export async function createProduct(
@@ -233,100 +229,44 @@ export async function createProduct(
   productMetadata: { title: string; subtitle: string; mediaType: "image" | "video" },
   file?: File
 ): Promise<Product> {
-  // Try using Supabase first
-  if (supabase && file) {
-    try {
-      const publicUrl = await uploadProductMedia(file, categoryId);
-      const id = `${categoryId}-${Date.now()}`;
-      const thumbnail = productMetadata.mediaType === "image" ? publicUrl : "/images/brand-logo.png";
+  if (!supabase) throw new Error("Supabase client not initialized");
+  if (!file) throw new Error("No file provided for upload");
 
-      const { error } = await supabase.from("products").insert({
-        id,
-        category_id: categoryId,
-        title: productMetadata.title,
-        subtitle: productMetadata.subtitle,
-        media_type: productMetadata.mediaType,
-        url: publicUrl,
-        thumbnail,
-      });
-
-      if (error) throw error;
-
-      return {
-        id,
-        title: productMetadata.title,
-        subtitle: productMetadata.subtitle,
-        heroMedia: { type: productMetadata.mediaType, url: publicUrl },
-        media: [
-          {
-            type: productMetadata.mediaType,
-            url: publicUrl,
-            thumbnail,
-            subtitle: productMetadata.subtitle,
-          },
-        ],
-      };
-    } catch (err) {
-      console.error("[DB Service] Failed to create product in Supabase. Trying local storage fallback.", err);
-    }
-  }
-
-  // Fallback to local storage (using base64 conversion)
-  if (!file) {
-    throw new Error("No file or media data provided for local upload fallback.");
-  }
-
-  // Base64 helper
-  const fileToDataUrl = (f: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(f);
-    });
-  };
-
-  const dataUrl = await fileToDataUrl(file);
+  const publicUrl = await uploadProductMedia(file, categoryId);
   const id = `${categoryId}-${Date.now()}`;
-  const localProduct: Product = {
+  const thumbnail = productMetadata.mediaType === "image" ? publicUrl : "/images/brand-logo.png";
+
+  const { error } = await supabase.from("products").insert({
+    id,
+    category_id: categoryId,
+    title: productMetadata.title,
+    subtitle: productMetadata.subtitle,
+    media_type: productMetadata.mediaType,
+    url: publicUrl,
+    thumbnail,
+  });
+
+  if (error) throw error;
+
+  return {
     id,
     title: productMetadata.title,
     subtitle: productMetadata.subtitle,
-    heroMedia: { type: productMetadata.mediaType, url: dataUrl },
+    heroMedia: { type: productMetadata.mediaType, url: publicUrl },
     media: [
       {
         type: productMetadata.mediaType,
-        url: dataUrl,
-        thumbnail: productMetadata.mediaType === "image" ? dataUrl : "/images/brand-logo.png",
+        url: publicUrl,
+        thumbnail,
         subtitle: productMetadata.subtitle,
       },
     ],
   };
-
-  const existing = localStorage.getItem(`fashionking_products_${categoryId}`);
-  const productsList = existing ? JSON.parse(existing) : [];
-  localStorage.setItem(`fashionking_products_${categoryId}`, JSON.stringify([localProduct, ...productsList]));
-
-  return localProduct;
 }
 
-export async function deleteProduct(productId: string, categoryId: string): Promise<void> {
-  try {
-    if (!supabase) throw new Error("Supabase client not initialized");
-    const { error } = await supabase.from("products").delete().eq("id", productId);
-    if (error) throw error;
-  } catch (err) {
-    console.warn("[DB Service] deleteProduct failed. Removing from localStorage fallback.", err);
-    try {
-      const existing = localStorage.getItem(`fashionking_products_${categoryId}`);
-      if (existing) {
-        const productsList: Product[] = JSON.parse(existing);
-        const filtered = productsList.filter((p) => p.id !== productId);
-        localStorage.setItem(`fashionking_products_${categoryId}`, JSON.stringify(filtered));
-      }
-    } catch (e) {
-      console.error("[DB Service] Local storage delete fallback failed", e);
-    }
-  }
+export async function deleteProduct(productId: string, _categoryId: string): Promise<void> {
+  if (!supabase) throw new Error("Supabase client not initialized");
+  const { error } = await supabase.from("products").delete().eq("id", productId);
+  if (error) throw error;
 }
 
