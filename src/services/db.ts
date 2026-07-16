@@ -4,7 +4,7 @@ import { contactConfig } from "@/config/contact";
 import { socialConfig } from "@/config/social";
 import { collectionsConfig } from "@/config/collections";
 import { imageConfig } from "@/config/images";
-import type { DbSettings, DbCollection, DbGallery, DbTestimonial, DbService, Product } from "@/types/db";
+import type { DbSettings, DbCollection, DbGallery, DbTestimonial, DbService, Product, MediaItem } from "@/types/db";
 
 // 1. SETTINGS SERVICE
 export async function getSettings(): Promise<DbSettings> {
@@ -226,24 +226,38 @@ export async function getProducts(categoryId: string): Promise<Product[]> {
 
 export async function createProduct(
   categoryId: string,
-  productMetadata: { title: string; subtitle: string; mediaType: "image" | "video" },
-  file?: File
+  productMetadata: { title: string; subtitle: string },
+  mediaItems: { file: File; mediaType: "image" | "video"; subtitle: string }[]
 ): Promise<Product> {
   if (!supabase) throw new Error("Supabase client not initialized");
-  if (!file) throw new Error("No file provided for upload");
+  if (mediaItems.length === 0) throw new Error("No media items provided");
 
-  const publicUrl = await uploadProductMedia(file, categoryId);
   const id = `${categoryId}-${Date.now()}`;
-  const thumbnail = productMetadata.mediaType === "image" ? publicUrl : "/images/brand-logo.png";
+  
+  const mediaList = await Promise.all(
+    mediaItems.map(async (item) => {
+      const url = await uploadProductMedia(item.file, categoryId);
+      const thumbnail = item.mediaType === "image" ? url : "/images/brand-logo.png";
+      return {
+        type: item.mediaType,
+        url,
+        thumbnail,
+        subtitle: item.subtitle || "",
+      };
+    })
+  );
+
+  const heroItem = mediaList[0];
 
   const { error } = await supabase.from("products").insert({
     id,
     category_id: categoryId,
     title: productMetadata.title,
     subtitle: productMetadata.subtitle,
-    media_type: productMetadata.mediaType,
-    url: publicUrl,
-    thumbnail,
+    media_type: heroItem.type,
+    url: heroItem.url,
+    thumbnail: heroItem.thumbnail,
+    media: mediaList,
   });
 
   if (error) throw error;
@@ -252,15 +266,68 @@ export async function createProduct(
     id,
     title: productMetadata.title,
     subtitle: productMetadata.subtitle,
-    heroMedia: { type: productMetadata.mediaType, url: publicUrl },
-    media: [
-      {
-        type: productMetadata.mediaType,
-        url: publicUrl,
-        thumbnail,
-        subtitle: productMetadata.subtitle,
-      },
-    ],
+    heroMedia: { type: heroItem.type, url: heroItem.url },
+    media: mediaList,
+  };
+}
+
+export async function updateProduct(
+  productId: string,
+  updates: { 
+    title?: string; 
+    subtitle?: string; 
+    media?: MediaItem[];
+  }
+): Promise<Product> {
+  if (!supabase) throw new Error("Supabase client not initialized");
+
+  const extraFields: any = {};
+  if (updates.media && updates.media.length > 0) {
+    const heroItem = updates.media[0];
+    extraFields.media_type = heroItem.type;
+    extraFields.url = heroItem.url;
+    extraFields.thumbnail = heroItem.thumbnail;
+  }
+
+  const dbUpdates = {
+    ...updates,
+    ...extraFields,
+  };
+
+  const { data, error } = await supabase
+    .from("products")
+    .update(dbUpdates)
+    .eq("id", productId)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+
+  const dbMedia = Array.isArray(data.media) && data.media.length > 0 ? data.media : null;
+  const mediaItems: MediaItem[] = dbMedia ? dbMedia.map((m: any) => ({
+    type: m.type || "image",
+    url: m.url,
+    thumbnail: m.thumbnail || (m.type === "video" ? "/images/brand-logo.png" : m.url),
+    subtitle: m.subtitle || "",
+    focalPoint: m.focalPoint,
+  })) : [
+    {
+      type: data.media_type as "image" | "video",
+      url: data.url,
+      thumbnail: data.thumbnail || (data.media_type === "video" ? "/images/brand-logo.png" : data.url),
+      subtitle: data.subtitle || "",
+    }
+  ];
+
+  return {
+    id: data.id,
+    title: data.title,
+    subtitle: data.subtitle || "",
+    heroMedia: { 
+      type: (mediaItems[0]?.type || data.media_type) as "image" | "video", 
+      url: mediaItems[0]?.url || data.url 
+    },
+    media: mediaItems,
   };
 }
 
