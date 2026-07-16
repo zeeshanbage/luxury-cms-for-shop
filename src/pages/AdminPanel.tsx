@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2, Edit, X } from "lucide-react";
+import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2, Edit, X, GripVertical } from "lucide-react";
 
 import type { Product } from "@/types/db";
-import { getProducts, createProduct, deleteProduct, updateProduct, uploadProductMedia } from "@/services/db";
+import { getProducts, createProduct, deleteProduct, updateProduct, uploadProductMedia, updateProductsOrder } from "@/services/db";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const ADMIN_PASSWORD = "admin1188";
@@ -365,12 +365,17 @@ function AdminProductCard({
           </div>
         )}
 
-        {/* Files Count Badge */}
-        {product.media && product.media.length > 1 && (
-          <div className="absolute top-2 right-2 bg-luxury-gold text-black rounded-full px-2 py-0.5 text-[8px] uppercase tracking-wider font-bold shadow-md font-sans">
-            {product.media.length} files
+        {/* Files Count and Drag Handle Badges */}
+        <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10">
+          {product.media && product.media.length > 1 && (
+            <div className="bg-luxury-gold text-black rounded-full px-2 py-0.5 text-[8px] uppercase tracking-wider font-bold shadow-md font-sans">
+              {product.media.length} files
+            </div>
+          )}
+          <div className="bg-black/70 rounded-md p-1 border border-white/10 text-zinc-400 hover:text-white cursor-grab active:cursor-grabbing transition-colors">
+            <GripVertical size={11} />
           </div>
-        )}
+        </div>
       </div>
 
       {/* Info */}
@@ -703,6 +708,11 @@ export default function AdminPanel() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
+  // Drag and drop sequencing states
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
+
   // Fetch products for the active category
   useEffect(() => {
     let active = true;
@@ -761,6 +771,27 @@ export default function AdminPanel() {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
   };
 
+  const handleReorder = async (fromIndex: number, toIndex: number) => {
+    const reordered = [...products];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    setProducts(reordered);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+
+    setIsReordering(true);
+    try {
+      await updateProductsOrder(reordered.map((p) => p.id));
+    } catch (err) {
+      console.error("Failed to update products order:", err);
+      // Rollback sequence on error
+      const list = await getProducts(activeCategory);
+      setProducts(list);
+    } finally {
+      setIsReordering(false);
+    }
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setShowAddForm(false);
@@ -771,7 +802,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-luxury-black text-zinc-100 selection:bg-luxury-gold selection:text-black">
+    <div className="min-h-screen bg-luxury-black text-zinc-100 selection:bg-luxury-gold selection:text-black select-none">
       {/* Header */}
       <header className="border-b border-luxury-gold/10 bg-black/60 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -819,9 +850,16 @@ export default function AdminPanel() {
 
         {/* Add button row */}
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-serif font-light tracking-wider text-white uppercase">
-            {CATEGORIES.find((c) => c.id === activeCategory)?.label} Collection
-          </h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-serif font-light tracking-wider text-white uppercase">
+              {CATEGORIES.find((c) => c.id === activeCategory)?.label} Collection
+            </h2>
+            {isReordering && (
+              <span className="text-[10px] uppercase tracking-widest text-luxury-gold flex items-center gap-1.5 animate-pulse font-sans">
+                <span className="w-1.5 h-1.5 bg-luxury-gold rounded-full animate-ping" /> Saving sequence...
+              </span>
+            )}
+          </div>
           {!showAddForm && (
             <button
               onClick={() => setShowAddForm(true)}
@@ -863,13 +901,48 @@ export default function AdminPanel() {
               className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5"
             >
               <AnimatePresence>
-                {products.map((product) => (
-                  <AdminProductCard
+                {products.map((product, idx) => (
+                  <div
                     key={product.id}
-                    product={product}
-                    onEdit={() => setEditingProduct(product)}
-                    onDelete={() => handleDelete(product.id)}
-                  />
+                    draggable
+                    onDragStart={(e) => {
+                      setDraggedIndex(idx);
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    onDragEnd={() => {
+                      setDraggedIndex(null);
+                      setDragOverIndex(null);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (draggedIndex !== idx) {
+                        setDragOverIndex(idx);
+                      }
+                    }}
+                    onDragLeave={() => {
+                      if (dragOverIndex === idx) {
+                        setDragOverIndex(null);
+                      }
+                    }}
+                    onDrop={async (e) => {
+                      e.preventDefault();
+                      if (draggedIndex === null || draggedIndex === idx) return;
+                      await handleReorder(draggedIndex, idx);
+                    }}
+                    className={`transition-all duration-300 rounded-sm overflow-hidden ${
+                      draggedIndex === idx ? "opacity-30 scale-95 cursor-grabbing" : ""
+                    } ${
+                      dragOverIndex === idx 
+                        ? "border border-luxury-gold ring-1 ring-luxury-gold shadow-[0_0_20px_rgba(197,168,128,0.25)] translate-y-[-2px]" 
+                        : "border border-transparent"
+                    }`}
+                  >
+                    <AdminProductCard
+                      product={product}
+                      onEdit={() => setEditingProduct(product)}
+                      onDelete={() => handleDelete(product.id)}
+                    />
+                  </div>
                 ))}
               </AnimatePresence>
             </motion.div>

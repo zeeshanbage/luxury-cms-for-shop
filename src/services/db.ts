@@ -166,16 +166,92 @@ export async function getServices(): Promise<DbService[]> {
   }
 }
 
+function compressImage(file: File, maxSizeMB: number = 5): Promise<File> {
+  return new Promise((resolve) => {
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    if (!file.type.startsWith("image/") || file.size <= maxSizeBytes) {
+      return resolve(file);
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        // High visually-lossless quality for premium lookbook photos
+        const QUALITY = 0.92;
+        let scale = 1.0;
+
+        const attemptCompression = () => {
+          const canvas = document.createElement("canvas");
+          let width = Math.round(img.width * scale);
+          let height = Math.round(img.height * scale);
+
+          // Limit width and height to 4K max dimensions to prevent huge memory footprint
+          const maxDimension = 3840;
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(file);
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                return resolve(file);
+              }
+              // Stop scaling down if size is under 5MB or width is below 800px (to prevent too small resolutions)
+              if (blob.size <= maxSizeBytes || width < 800) {
+                const newName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+                const compressedFile = new File([blob], newName, {
+                  type: "image/jpeg",
+                  lastModified: Date.now(),
+                });
+                console.log(
+                  `[Image Compressor] Scaled ${scale.toFixed(2)}x and saved ${file.name} from ${(file.size / 1024 / 1024).toFixed(2)}MB to ${(blob.size / 1024 / 1024).toFixed(2)}MB at visually-lossless quality (${QUALITY})`
+                );
+                resolve(compressedFile);
+              } else {
+                scale *= 0.85;
+                attemptCompression();
+              }
+            },
+            "image/jpeg",
+            QUALITY
+          );
+        };
+        attemptCompression();
+      };
+      img.onerror = () => resolve(file);
+    };
+    reader.onerror = () => resolve(file);
+  });
+}
+
 // 6. PRODUCTS / LOOKBOOK UPLOADS SERVICE
 export async function uploadProductMedia(file: File, categoryId: string): Promise<string> {
   if (!supabase) throw new Error("Supabase client not initialized");
 
-  const fileExt = file.name.split(".").pop();
+  const fileToUpload = await compressImage(file, 5);
+  const fileExt = fileToUpload.name.split(".").pop();
   const fileName = `${categoryId}/${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
 
   const { error } = await supabase.storage
     .from("products")
-    .upload(fileName, file, {
+    .upload(fileName, fileToUpload, {
       cacheControl: "3600",
       upsert: false,
     });
@@ -201,6 +277,7 @@ export async function getProducts(categoryId: string): Promise<Product[]> {
     .from("products")
     .select("*")
     .eq("category_id", categoryId)
+    .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -336,4 +413,21 @@ export async function deleteProduct(productId: string, _categoryId: string): Pro
   const { error } = await supabase.from("products").delete().eq("id", productId);
   if (error) throw error;
 }
+
+export async function updateProductsOrder(orderedIds: string[]): Promise<void> {
+  const client = supabase;
+  if (!client) throw new Error("Supabase client not initialized");
+
+  const promises = orderedIds.map((id, index) =>
+    client
+      .from("products")
+      .update({ sort_order: index })
+      .eq("id", id)
+  );
+
+  const results = await Promise.all(promises);
+  const error = results.find(r => r.error)?.error;
+  if (error) throw error;
+}
+
 
