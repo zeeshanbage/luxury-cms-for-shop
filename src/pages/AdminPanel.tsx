@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2, Edit, X, GripVertical } from "lucide-react";
 
@@ -701,6 +702,7 @@ function EditProductModal({ product, categoryId, onSave, onClose }: EditProductM
 
 // ─── Main Admin Panel ─────────────────────────────────────────────────────────
 export default function AdminPanel() {
+  const queryClient = useQueryClient();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
   const [products, setProducts] = useState<Product[]>([]);
@@ -754,6 +756,7 @@ export default function AdminPanel() {
   ) => {
     const newProd = await createProduct(activeCategory, productMetadata, mediaItems);
     setProducts((prev) => [newProd, ...prev]);
+    queryClient.invalidateQueries({ queryKey: ["products"] });
   };
 
   const handleEditSave = async (
@@ -764,11 +767,13 @@ export default function AdminPanel() {
     setProducts((prev) =>
       prev.map((p) => (p.id === productId ? updatedProd : p))
     );
+    queryClient.invalidateQueries({ queryKey: ["products"] });
   };
 
   const handleDelete = async (productId: string) => {
     await deleteProduct(productId, activeCategory);
     setProducts((prev) => prev.filter((p) => p.id !== productId));
+    queryClient.invalidateQueries({ queryKey: ["products"] });
   };
 
   const handleReorder = async (fromIndex: number, toIndex: number) => {
@@ -782,6 +787,7 @@ export default function AdminPanel() {
     setIsReordering(true);
     try {
       await updateProductsOrder(reordered.map((p) => p.id));
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (err) {
       console.error("Failed to update products order:", err);
       // Rollback sequence on error
