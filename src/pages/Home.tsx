@@ -415,16 +415,15 @@ export default function Home() {
             translateY: "-50%",
           }}
         />
-
         {/* Background design matrix grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:5rem_5rem]" />
       </div>
 
-      {/* SECTION 1: Fullscreen Official Storefront Landing Hero */}
-      <div className="min-h-[90vh] sm:min-h-screen w-full flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto px-6 relative z-20 py-10 md:py-0 gap-8 lg:gap-16">
-
+      {/* SECTION 1: Dynamic Signboard Hero (Split widescreen layout, text overlays black gradient over right-aligned image) */}
+      <div className="relative h-[85vh] sm:h-screen w-full flex items-center justify-start overflow-hidden border-b border-white/5 bg-black">
+        
         {/* Left Column: copy overlay */}
-        <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-6 max-w-2xl select-none z-10 w-full md:w-1/2">
+        <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left space-y-6 max-w-2xl select-none w-full md:w-[50%] px-6 md:pl-16 lg:pl-24">
 
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -491,16 +490,17 @@ export default function Home() {
 
         </div>
 
-        {/* Right Column: Storefront backdrop image in a frame */}
-        <div className="relative w-full md:w-1/2 aspect-square sm:aspect-[4/3] md:aspect-[1.2] lg:aspect-[1.3] z-10 rounded-lg overflow-hidden border border-white/10 shadow-2xl bg-black">
+        {/* Storefront backdrop image (Full height right aligned, parallax and zoom enabled) */}
+        <div className="absolute inset-y-0 right-0 w-full md:w-[65%] z-0 select-none overflow-hidden pointer-events-none">
           <motion.img
             src={getImageUrl(imageConfig.heroImages?.storefront || "/images/signboard.png")}
             alt={`${settings?.site_name || siteConfig.name} Storefront`}
             style={{ y: heroImageParallax, scale: heroImageScale, transformOrigin: "top" }}
-            className="w-full h-full object-cover filter brightness-[0.95] contrast-[1.02] saturate-[0.98]"
+            className="w-full h-full object-cover object-center md:object-right filter brightness-[0.88] contrast-[1.03] saturate-[0.95]"
           />
-          {/* Subtle gradient vignette to blend edges */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+          {/* Smooth black gradient overlay to blend into the left black panel */}
+          <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-black via-black/40 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
         </div>
       </div>
 

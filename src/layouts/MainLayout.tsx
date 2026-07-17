@@ -34,15 +34,30 @@ export default function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen bg-luxury-black text-zinc-100 selection:bg-luxury-gold selection:text-black">
       {/* Premium Static Header (Not sticky, scrolls away naturally) */}
-      <header className="relative w-full h-28 bg-transparent z-50">
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="group py-1">
-            <StorefrontLogo />
-          </Link>
+      <header className="relative w-full h-28 bg-[#030303] border-b border-white/5 z-50">
+        <div className="max-w-7xl mx-auto px-6 h-full grid grid-cols-3 items-center">
+          
+          {/* Left: Navigation links */}
+          <div className="hidden md:flex items-center space-x-8 text-[10px] tracking-[0.25em] uppercase font-semibold font-sans">
+            <Link to="/" className="text-zinc-400 hover:text-luxury-gold transition-colors duration-300">Home</Link>
+            <a href="#campaign-gallery-root" onClick={(e) => {
+              e.preventDefault();
+              document.getElementById("campaign-gallery-root")?.scrollIntoView({ behavior: "smooth" });
+            }} className="text-zinc-400 hover:text-luxury-gold transition-colors duration-300">Lookbook</a>
+            <Link to="/admin" className="text-zinc-400 hover:text-luxury-gold transition-colors duration-300">Admin</Link>
+          </div>
+          {/* Mobile spacer */}
+          <div className="md:hidden" />
 
-          {/* Contact CTA */}
-          <div className="flex items-center">
+          {/* Center: Logo */}
+          <div className="flex justify-center">
+            <Link to="/" className="group py-1 flex flex-col items-center select-none">
+              <StorefrontLogo />
+            </Link>
+          </div>
+
+          {/* Right: Contact CTA */}
+          <div className="flex justify-end items-center">
             <Link
               to="/contact"
               className="relative px-6 py-2.5 text-xs tracking-widest uppercase border border-luxury-gold/40 text-luxury-gold hover:text-black font-sans font-medium transition-all duration-500 overflow-hidden group rounded-sm"
