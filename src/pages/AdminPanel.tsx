@@ -913,6 +913,7 @@ export default function AdminPanel() {
                     draggable
                     onDragStart={(e) => {
                       setDraggedIndex(idx);
+                      e.dataTransfer.setData("text/plain", idx.toString());
                       e.dataTransfer.effectAllowed = "move";
                     }}
                     onDragEnd={() => {
@@ -932,8 +933,11 @@ export default function AdminPanel() {
                     }}
                     onDrop={async (e) => {
                       e.preventDefault();
-                      if (draggedIndex === null || draggedIndex === idx) return;
-                      await handleReorder(draggedIndex, idx);
+                      const fromIdxStr = e.dataTransfer.getData("text/plain");
+                      if (fromIdxStr === "") return;
+                      const fromIndex = parseInt(fromIdxStr, 10);
+                      if (fromIndex === idx) return;
+                      await handleReorder(fromIndex, idx);
                     }}
                     className={`transition-all duration-300 rounded-sm overflow-hidden ${
                       draggedIndex === idx ? "opacity-30 scale-95 cursor-grabbing" : ""
