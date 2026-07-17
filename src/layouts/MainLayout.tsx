@@ -144,6 +144,7 @@ export default function MainLayout() {
             {socials.instagram && <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-luxury-gold transition-colors uppercase">Instagram</a>}
             {socials.whatsapp && <a href={socials.whatsapp} target="_blank" rel="noopener noreferrer" className="hover:text-luxury-gold transition-colors uppercase">WhatsApp</a>}
             {socials.twitter && <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-luxury-gold transition-colors uppercase">Twitter</a>}
+            <Link to="/admin" className="hover:text-luxury-gold transition-colors uppercase">Admin</Link>
           </div>
         </div>
       </footer>
