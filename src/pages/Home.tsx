@@ -421,10 +421,10 @@ export default function Home() {
       </div>
 
       {/* SECTION 1: Fullscreen Official Storefront Landing Hero */}
-      <div className="min-h-[70vh] sm:h-[calc(100vh-112px)] w-full flex items-center justify-center max-w-7xl mx-auto px-6 relative z-20 py-10 sm:py-0">
+      <div className="min-h-[90vh] sm:min-h-screen w-full flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto px-6 relative z-20 py-10 md:py-0 gap-8 lg:gap-16">
 
-        {/* Centered official showroom copy overlay */}
-        <div className="flex flex-col items-center justify-center text-center space-y-6 max-w-3xl select-none">
+        {/* Left Column: copy overlay */}
+        <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-6 max-w-2xl select-none z-10 w-full md:w-1/2">
 
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -441,7 +441,7 @@ export default function Home() {
               initial={{ y: "100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light tracking-wide font-serif text-white leading-none uppercase"
+              className="text-4xl sm:text-6xl md:text-5xl lg:text-7xl xl:text-8xl font-light tracking-wide font-serif text-white leading-none uppercase"
             >
               {settings?.site_name || siteConfig.name}
             </motion.h1>
@@ -452,7 +452,7 @@ export default function Home() {
               initial={{ y: "100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-lg sm:text-2xl md:text-3xl tracking-[0.3em] font-serif text-luxury-gold font-light italic"
+              className="text-base sm:text-2xl tracking-[0.3em] font-serif text-luxury-gold font-light italic"
             >
               {settings?.site_sub_name || siteConfig.subName}
             </motion.p>
@@ -462,14 +462,14 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.3 }}
-            className="flex flex-col items-center space-y-3 pt-4"
+            className="flex flex-col items-center md:items-start space-y-3 pt-2"
           >
             <p className="text-zinc-300 font-light text-xs sm:text-sm tracking-wider leading-relaxed max-w-lg">
               {settings?.site_tagline || siteConfig.tagline}
             </p>
             <span className="text-[10px] tracking-[0.15em] text-zinc-500 uppercase font-sans">
               {settings?.address 
-                ? settings.address.split(',').slice(-3).join(',').trim() 
+                ? settings.address 
                 : (siteConfig as any).address || "Beed, Maharashtra"}
             </span>
           </motion.div>
@@ -478,7 +478,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="pt-6"
+            className="pt-4"
           >
             <button
               onClick={scrollToCampaignGallery}
@@ -491,17 +491,16 @@ export default function Home() {
 
         </div>
 
-        {/* Storefront backdrop image (parallax and zoom enabled, adjusted brightness to be more readable and visible) */}
-        <div className="absolute inset-0 z-0 select-none overflow-hidden pointer-events-none">
+        {/* Right Column: Storefront backdrop image in a frame */}
+        <div className="relative w-full md:w-1/2 aspect-square sm:aspect-[4/3] md:aspect-[1.2] lg:aspect-[1.3] z-10 rounded-lg overflow-hidden border border-white/10 shadow-2xl bg-black">
           <motion.img
             src={getImageUrl(imageConfig.heroImages?.storefront || "/images/signboard.png")}
             alt={`${settings?.site_name || siteConfig.name} Storefront`}
             style={{ y: heroImageParallax, scale: heroImageScale, transformOrigin: "top" }}
-            className="w-full h-full object-cover max-md:object-contain object-top filter brightness-[0.88] contrast-[1.03] saturate-[0.95]"
+            className="w-full h-full object-cover filter brightness-[0.95] contrast-[1.02] saturate-[0.98]"
           />
-          {/* Soft gradients only, ensuring sign remains readable */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.35)_100%)] pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-luxury-black to-transparent pointer-events-none" />
+          {/* Subtle gradient vignette to blend edges */}
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
         </div>
       </div>
 
