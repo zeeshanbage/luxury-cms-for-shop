@@ -12,7 +12,6 @@ import * as seemaSareesTheme from "./clients/seemasarees/theme";
 import * as seemaSareesImages from "./clients/seemasarees/images";
 import * as seemaSareesCollections from "./clients/seemasarees/collections";
 
-const activeClient = import.meta.env.VITE_ACTIVE_CLIENT || "fashionking";
 
 interface ClientConfig {
   site: typeof fashionKingSite.siteConfig;
@@ -53,5 +52,6 @@ const clientConfigs: Record<string, ClientConfig> = {
   },
 };
 
-export const activeClientConfig = clientConfigs[activeClient] || clientConfigs.fashionking;
-export const activeClientName = activeClient;
+const activeClient = import.meta.env.VITE_ACTIVE_CLIENT || "fashionking";
+export const activeClientName = activeClient.toLowerCase();
+export const activeClientConfig = clientConfigs[activeClientName] || clientConfigs.fashionking;

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, Link } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { Phone, Mail, MapPin, Shield } from "lucide-react";
@@ -23,7 +24,32 @@ const StorefrontLogo = () => {
 export default function MainLayout() {
   const { data: settings } = useSettings();
 
-  const brandDescription = settings?.site_description || "";
+  useEffect(() => {
+    // Dynamically set document title and meta descriptions for SEO compatibility
+    const title = settings?.seo_title || siteConfig.seoTitle;
+    const description = settings?.seo_description || siteConfig.seoDescription;
+    const ogTitle = settings?.og_title || siteConfig.ogTitle;
+    const ogDescription = settings?.og_description || siteConfig.ogDescription;
+
+    document.title = title;
+
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", description);
+    }
+
+    const metaOgTitle = document.querySelector('meta[property="og:title"]');
+    if (metaOgTitle) {
+      metaOgTitle.setAttribute("content", ogTitle);
+    }
+
+    const metaOgDescription = document.querySelector('meta[property="og:description"]');
+    if (metaOgDescription) {
+      metaOgDescription.setAttribute("content", ogDescription);
+    }
+  }, [settings]);
+
+  const brandDescription = settings?.site_description || siteConfig.description;
   const address = settings?.address || "";
   const mapsLink = settings?.maps_link || "#";
   const phone = settings?.phone || "";

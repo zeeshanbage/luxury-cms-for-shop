@@ -75,3 +75,39 @@ npm run dev
 node node_modules/typescript/bin/tsc -b; node node_modules/vite/bin/vite.js build
 ```
 The website will adapt automatically, displaying all configurations, logos, colors, and lookbooks of the active client.
+
+---
+
+## Separate Vercel Projects Deployment Guide
+
+To deploy separate websites for each client on Vercel, you should create a separate Vercel project for each client. Both projects will link to the **same** GitHub repository, but you will configure different Environment Variables in each project.
+
+### Step 1: Create a Vercel Project for the Client
+1. Log in to Vercel and click **Add New > Project**.
+2. Import your GitHub repository.
+3. Name your project (e.g. `fashion-king-beed` or `seema-sarees-center`).
+
+### Step 2: Configure Environment Variables
+In the **Environment Variables** section of the Vercel project configuration, add the following variables:
+
+#### For the Seema Sarees Project (`seemasareecenter.vercel.app`):
+- `VITE_ACTIVE_CLIENT` = `seemasarees`
+- `VITE_SUPABASE_URL` = `https://gfxskzrmfncolffwefge.supabase.co`
+- `VITE_SUPABASE_ANON_KEY` = `sb_publishable_8ffEFsG3G0QQhj_qSqka1Q_YC1p8nyB`
+
+#### For the Fashion King Project:
+- `VITE_ACTIVE_CLIENT` = `fashionking`
+- `VITE_SUPABASE_URL` = `https://jfwycmxmijssvoubedfv.supabase.co`
+- `VITE_SUPABASE_ANON_KEY` = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmd3ljbXhtaWpzc3ZvdWJlZGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjIwNDYsImV4cCI6MjA5OTY5ODA0Nn0.gIke4GJwCWYLqgKNOCMfGFh6_GiUWqlgI28dv9UoOB8`
+
+### Step 3: Configure Build Command & Output
+- **Framework Preset**: Vite
+- **Build Command**: `tsc -b && vite build`
+- **Output Directory**: `dist`
+- Click **Deploy**.
+
+---
+
+### Advantages:
+- **Optimized Bundles**: Because the active client is resolved at compile time, Vite automatically tree-shakes and completely strips the configurations and assets of all other clients from the final build bundle, improving speed and performance.
+- **Isolated Environments**: Each client has their own isolated Vercel project, deployment pipeline, custom domains, and settings.
