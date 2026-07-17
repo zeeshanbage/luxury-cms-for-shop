@@ -122,11 +122,11 @@ export async function getTestimonials(): Promise<DbTestimonial[]> {
     return data as DbTestimonial[];
   } catch (err) {
     console.warn("[DB Service] getTestimonials failed. Falling back to local testimonials fallback mock.", err);
-    return imageConfig.testimonials.map((item, idx) => ({
+    return (imageConfig.testimonials as any[]).map((item, idx) => ({
       id: idx + 1,
       client_name: item.clientName,
       client_image: item.clientImage,
-      review_text: "The suit fitting was absolutely flawless. They took the time to map my posture and the result was incredibly comfortable.",
+      review_text: item.reviewText || "The quality of fabrics and curation was absolutely flawless. Very satisfied with my purchase.",
       rating: 5,
       sort_order: 10,
     }));
@@ -285,20 +285,34 @@ export async function getProducts(categoryId: string): Promise<Product[]> {
     throw error;
   }
 
-  return (data || []).map((row) => ({
-    id: row.id,
-    title: row.title,
-    subtitle: row.subtitle || "",
-    heroMedia: { type: row.media_type as "image" | "video", url: row.url },
-    media: [
+  return (data || []).map((row) => {
+    const dbMedia = Array.isArray(row.media) && row.media.length > 0 ? row.media : null;
+    const mediaItems: MediaItem[] = dbMedia ? dbMedia.map((m: any) => ({
+      type: m.type || "image",
+      url: m.url,
+      thumbnail: m.thumbnail || (m.type === "video" ? "/images/brand-logo.png" : m.url),
+      subtitle: m.subtitle || "",
+      focalPoint: m.focalPoint,
+    })) : [
       {
         type: row.media_type as "image" | "video",
         url: row.url,
         thumbnail: row.thumbnail || (row.media_type === "video" ? "/images/brand-logo.png" : row.url),
         subtitle: row.subtitle || "",
+      }
+    ];
+
+    return {
+      id: row.id,
+      title: row.title,
+      subtitle: row.subtitle || "",
+      heroMedia: { 
+        type: (mediaItems[0]?.type || row.media_type) as "image" | "video", 
+        url: mediaItems[0]?.url || row.url 
       },
-    ],
-  }));
+      media: mediaItems,
+    };
+  });
 }
 
 export async function createProduct(

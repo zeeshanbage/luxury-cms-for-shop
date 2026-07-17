@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { Compass, Phone, Mail, MapPin } from "lucide-react";
 import { useSettings } from "@/hooks/useDbQueries";
+import { contactConfig } from "@/config/contact";
+import { socialConfig } from "@/config/social";
 
 const InstagramIcon = ({ size = 18, className = "" }: { size?: number; className?: string }) => (
   <svg
@@ -40,17 +42,23 @@ export default function Contact() {
   };
 
   // Safe defaults
-  const address = settings?.address || "Takiya Masjid Road, Shahinsha Nagar, Beed, Maharashtra 431122";
-  const phoneFormatted = settings?.phone_formatted || "+91 99604 34588";
-  const phone = settings?.phone || "+919960434588";
-  const email = settings?.email || "contact@fashionkingbeed.com";
-  const businessHours = settings?.business_hours || [
-    { days: "Monday — Saturday", hours: "10:00 AM — 09:30 PM" },
-    { days: "Sunday", hours: "11:00 AM — 09:00 PM" },
-    { days: "Weekly Holiday", hours: "Open Seven Days", highlight: true }
-  ];
-  const mapsLink = settings?.maps_link || "https://maps.app.goo.gl/sBvFjZnwmzMa6wD59";
-  const instagramUrl = settings?.socials?.instagram || "https://www.instagram.com/fashion_king_1188/?hl=en";
+  const address = settings?.address || contactConfig.address;
+  const phoneFormatted = settings?.phone_formatted || contactConfig.phoneFormatted;
+  const phone = settings?.phone || contactConfig.phone;
+  const email = settings?.email || contactConfig.email;
+  const businessHours = settings?.business_hours || contactConfig.businessHours;
+  const mapsLink = settings?.maps_link || contactConfig.mapsLink;
+  const instagramUrl = settings?.socials?.instagram || socialConfig.instagram;
+
+  const getInstagramHandle = (url: string) => {
+    if (!url) return "";
+    const cleanUrl = url.replace(/\/$/, "");
+    const parts = cleanUrl.split("/");
+    const handle = parts[parts.length - 1].split("?")[0];
+    return handle ? `@${handle}` : "";
+  };
+
+  const instagramHandle = getInstagramHandle(instagramUrl) || "@showroom";
 
   return (
     <div className="py-20 md:py-32 relative overflow-hidden">
@@ -118,7 +126,7 @@ export default function Contact() {
                       <div>
                         <p className="text-xs uppercase tracking-wider text-zinc-400 font-semibold mb-1">Instagram</p>
                         <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-light text-zinc-200 hover:text-luxury-gold transition-colors">
-                          @fashion_king_1188
+                          {instagramHandle}
                         </a>
                       </div>
                     </li>
@@ -151,8 +159,8 @@ export default function Contact() {
             <motion.div variants={itemVariants} className="lg:col-span-7 w-full h-full min-h-[380px] lg:min-h-[460px]">
               <div className="glass-card p-2 rounded-sm overflow-hidden w-full h-full shadow-[0_0_30px_rgba(197,168,128,0.15)] border border-white/10 relative">
                 <iframe
-                  title="Fashion King Location Map"
-                  src="https://maps.google.com/maps?q=Fashion%20King%20Clothes%20and%20Tailoring%20Beed%20Maharashtra&t=&z=17&ie=UTF8&iwloc=&output=embed"
+                  title={`${settings?.site_name || "Showroom"} Location Map`}
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=&z=17&ie=UTF8&iwloc=&output=embed`}
                   className="w-full h-[380px] lg:h-[480px] border-0 rounded-sm filter invert-[0.9] hue-rotate-[180deg] brightness-[0.9] contrast-[1.2]"
                   allowFullScreen
                   loading="lazy"

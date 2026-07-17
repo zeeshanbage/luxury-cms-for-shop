@@ -5,15 +5,11 @@ import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCir
 
 import type { Product } from "@/types/db";
 import { getProducts, createProduct, deleteProduct, updateProduct, uploadProductMedia, updateProductsOrder } from "@/services/db";
+import { useSettings, useCollections } from "@/hooks/useDbQueries";
+import { siteConfig } from "@/config/site";
+import { collectionsConfig } from "@/config/collections";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
 const ADMIN_PASSWORD = "admin1188";
-const CATEGORIES = [
-  { id: "suits",    label: "Suits",    file: "suits"    },
-  { id: "sherwani", label: "Sherwani", file: "sherwani" },
-  { id: "kurta",    label: "Kurta",    file: "kurta"    },
-  { id: "fabrics",  label: "Fabrics",  file: "fabrics"  },
-];
 
 // ─── File → base64 URL ───────────────────────────────────────────────────────
 function fileToDataUrl(file: File): Promise<string> {
@@ -27,6 +23,7 @@ function fileToDataUrl(file: File): Promise<string> {
 
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
+  const { data: settings } = useSettings();
   const [pw, setPw] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState(false);
@@ -58,7 +55,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             </div>
             <div className="text-center">
               <h1 className="text-xl font-serif font-light tracking-widest text-white uppercase">Admin Access</h1>
-              <p className="text-[10px] tracking-[0.3em] text-zinc-500 mt-1 uppercase">Fashion King Studio</p>
+              <p className="text-[10px] tracking-[0.3em] text-zinc-500 mt-1 uppercase">{settings?.site_name || siteConfig.name} Studio</p>
             </div>
           </div>
 
@@ -703,12 +700,26 @@ function EditProductModal({ product, categoryId, onSave, onClose }: EditProductM
 // ─── Main Admin Panel ─────────────────────────────────────────────────────────
 export default function AdminPanel() {
   const queryClient = useQueryClient();
+  const { data: settings } = useSettings();
+  const { data: collections = [] } = useCollections();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
+  const [activeCategory, setActiveCategory] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+
+  // Dynamic categories list
+  const categories = collections.length > 0
+    ? collections.map(c => ({ id: c.id, label: c.title }))
+    : collectionsConfig.map(c => ({ id: c.id, label: c.title }));
+
+  // Set initial category when categories load
+  useEffect(() => {
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0].id);
+    }
+  }, [categories, activeCategory]);
 
   // Drag and drop sequencing states
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -717,6 +728,7 @@ export default function AdminPanel() {
 
   // Fetch products for the active category
   useEffect(() => {
+    if (!activeCategory) return;
     let active = true;
     async function load() {
       const list = await getProducts(activeCategory);
@@ -733,10 +745,11 @@ export default function AdminPanel() {
 
   // Load counts for all categories on mount or when products list changes
   useEffect(() => {
+    if (categories.length === 0) return;
     let active = true;
     async function loadCounts() {
       const counts: Record<string, number> = {};
-      for (const cat of CATEGORIES) {
+      for (const cat of categories) {
         const list = await getProducts(cat.id);
         counts[cat.id] = list.length;
       }
@@ -817,7 +830,7 @@ export default function AdminPanel() {
               <Lock size={12} className="text-luxury-gold" />
             </div>
             <div>
-              <p className="text-xs font-serif tracking-[0.2em] text-white uppercase">Fashion King</p>
+              <p className="text-xs font-serif tracking-[0.2em] text-white uppercase">{settings?.site_name || siteConfig.name}</p>
               <p className="text-[9px] tracking-[0.3em] text-zinc-500 uppercase">Admin Studio</p>
             </div>
           </div>
@@ -833,7 +846,7 @@ export default function AdminPanel() {
       <div className="max-w-6xl mx-auto px-6 py-12 space-y-10">
         {/* Category Tabs */}
         <div className="flex items-center gap-2 flex-wrap">
-          {CATEGORIES.map((cat) => {
+          {categories.map((cat) => {
             const count = categoryCounts[cat.id] ?? 0;
             return (
               <button
@@ -858,7 +871,7 @@ export default function AdminPanel() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h2 className="text-xl font-serif font-light tracking-wider text-white uppercase">
-              {CATEGORIES.find((c) => c.id === activeCategory)?.label} Collection
+              {categories.find((c) => c.id === activeCategory)?.label} Collection
             </h2>
             {isReordering && (
               <span className="text-[10px] uppercase tracking-widest text-luxury-gold flex items-center gap-1.5 animate-pulse font-sans">

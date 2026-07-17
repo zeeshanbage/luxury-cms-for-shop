@@ -3,15 +3,17 @@ import { AnimatePresence } from "framer-motion";
 import { Phone, Mail, MapPin, Shield } from "lucide-react";
 import { useSettings } from "@/hooks/useDbQueries";
 import { getImageUrl } from "@/utils/image";
+import { siteConfig } from "@/config/site";
+import { imageConfig } from "@/config/images";
 
-// Dynamic logo component using brand-logo.png
+// Dynamic logo component using configured logo path
 const StorefrontLogo = () => {
   const { data: settings } = useSettings();
   return (
     <div className="flex items-center justify-center select-none">
       <img
-        src={getImageUrl("/images/brand-logo.png")}
-        alt={settings?.site_name || "Fashion King"}
+        src={getImageUrl((imageConfig as any).logo || "/images/brand-logo.png")}
+        alt={settings?.site_name || siteConfig.name}
         className="h-14 sm:h-18 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(197,168,128,0.25)] transition-all duration-300 hover:scale-[1.02]"
       />
     </div>
@@ -130,7 +132,7 @@ export default function MainLayout() {
         {/* Footer Base */}
         <div className="max-w-7xl mx-auto px-6 border-t border-luxury-gold/5 pt-8 flex flex-col md:flex-row items-center justify-between text-[11px] font-light tracking-wider text-zinc-600">
           <div className="flex flex-col space-y-1 md:space-y-0 text-center md:text-left">
-            <p>© {new Date().getFullYear()} FASHION KING. ALL RIGHTS RESERVED.</p>
+            <p>© {new Date().getFullYear()} {settings?.site_name || siteConfig.name}. ALL RIGHTS RESERVED.</p>
             <p className="text-[9px] text-zinc-700 uppercase tracking-widest mt-0.5">
               Developed by{" "}
               <a href="mailto:zeeshanbge@gmail.com" className="hover:text-luxury-gold transition-colors font-medium">

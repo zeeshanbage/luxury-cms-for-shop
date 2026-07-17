@@ -9,7 +9,9 @@ import {
 } from "framer-motion";
 import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { getImageUrl } from "@/utils/image";
-import { useSettings, useProducts } from "@/hooks/useDbQueries";
+import { useSettings, useProducts, useCollections } from "@/hooks/useDbQueries";
+import { siteConfig } from "@/config/site";
+import { imageConfig } from "@/config/images";
 import type { Product } from "@/types/db";
 
 // Fullscreen Immersive Lightbox Media Viewer
@@ -307,19 +309,25 @@ function ProductCampaign({
 }
 
 export default function Home() {
-  const { isLoading: isSettingsLoading } = useSettings();
-  const [activeCategory, setActiveCategory] = useState<string>("suits");
+  const { data: settings, isLoading: isSettingsLoading } = useSettings();
+  const { data: collections = [], isLoading: isCollectionsLoading } = useCollections();
+  const [activeCategory, setActiveCategory] = useState<string>("");
+
+  // Set the first loaded collection as active category
+  useEffect(() => {
+    if (collections.length > 0 && !activeCategory) {
+      setActiveCategory(collections[0].id);
+    }
+  }, [collections, activeCategory]);
 
   // Lightbox view state manager
   const [lightboxActiveProduct, setLightboxActiveProduct] = useState<Product | null>(null);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
 
-  const categories = [
-    { id: "suits", label: "SUITS" },
-    { id: "sherwani", label: "SHERWANI" },
-    { id: "kurta", label: "KURTA" },
-    { id: "fabrics", label: "FORMALS" },
-  ];
+  const categories = collections.map((col) => ({
+    id: col.id,
+    label: col.title.toUpperCase(),
+  }));
 
   // 2. Mouse coordinates tracking for ambient cursor spotlight glow
   const mouseX = useMotionValue(0);
@@ -356,7 +364,7 @@ export default function Home() {
   }));
 
   // Loading spinner layout
-  if (isSettingsLoading || isProductsLoading) {
+  if (isSettingsLoading || isCollectionsLoading || (isProductsLoading && activeCategory)) {
     return (
       <div className="h-screen w-full bg-black flex flex-col items-center justify-center space-y-6">
         <motion.div
@@ -365,10 +373,10 @@ export default function Home() {
           className="flex flex-col items-center"
         >
           <span className="text-3xl font-medium tracking-[0.3em] font-serif text-white mb-1">
-            FASHION KING
+            {settings?.site_name || siteConfig.name}
           </span>
           <span className="text-[0.65rem] tracking-[0.4em] uppercase text-luxury-gold">
-            CLOTHS & TAILORING
+            {settings?.site_sub_name || siteConfig.subName}
           </span>
         </motion.div>
         <div className="w-12 h-[1px] bg-luxury-gold/30 relative overflow-hidden">
@@ -435,7 +443,7 @@ export default function Home() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light tracking-wide font-serif text-white leading-none uppercase"
             >
-              Fashion King
+              {settings?.site_name || siteConfig.name}
             </motion.h1>
           </div>
 
@@ -446,7 +454,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="text-lg sm:text-2xl md:text-3xl tracking-[0.3em] font-serif text-luxury-gold font-light italic"
             >
-              Clothes & Tailoring
+              {settings?.site_sub_name || siteConfig.subName}
             </motion.p>
           </div>
 
@@ -457,10 +465,12 @@ export default function Home() {
             className="flex flex-col items-center space-y-3 pt-4"
           >
             <p className="text-zinc-300 font-light text-xs sm:text-sm tracking-wider leading-relaxed max-w-lg">
-              Suit & Sherwani Specialist • Exclusive Tailoring & Fabrics
+              {settings?.site_tagline || siteConfig.tagline}
             </p>
             <span className="text-[10px] tracking-[0.15em] text-zinc-500 uppercase font-sans">
-              Shahinsha Nagar, Beed, Maharashtra
+              {settings?.address 
+                ? settings.address.split(',').slice(-3).join(',').trim() 
+                : (siteConfig as any).address || "Beed, Maharashtra"}
             </span>
           </motion.div>
 
@@ -484,8 +494,8 @@ export default function Home() {
         {/* Storefront backdrop image (parallax and zoom enabled, adjusted brightness to be more readable and visible) */}
         <div className="absolute inset-0 z-0 select-none overflow-hidden pointer-events-none">
           <motion.img
-            src={getImageUrl("/images/signboard.png")}
-            alt="Fashion King Storefront Sign"
+            src={getImageUrl(imageConfig.heroImages?.storefront || "/images/signboard.png")}
+            alt={`${settings?.site_name || siteConfig.name} Storefront`}
             style={{ y: heroImageParallax, scale: heroImageScale, transformOrigin: "top" }}
             className="w-full h-full object-cover max-md:object-contain object-top filter brightness-[0.88] contrast-[1.03] saturate-[0.95]"
           />

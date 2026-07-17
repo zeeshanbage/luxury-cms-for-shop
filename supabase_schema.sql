@@ -126,38 +126,6 @@ CREATE TABLE IF NOT EXISTS services (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- SEED MOCK DATA
-
--- Settings Seed
-INSERT INTO settings (id, site_name, site_sub_name) 
-VALUES (1, 'FASHION KING', 'Cloths & Tailoring') 
-ON CONFLICT (id) DO NOTHING;
-
--- Collections Seed
-INSERT INTO collections (id, title, price, description, icon, features, image_url, sort_order) VALUES
-('bespoke-suit', 'Bespoke Groom Suit', 'Starting from ₹15,000', 'Individually styled and tailored western lounge suits, double-breasted coats, groom blazers, and Tuxedos drafted from your customized measurements.', 'Scissors', ARRAY['Custom blazer & trouser drafting', 'Choice of premium imported suiting materials', 'Individual canvas structured chest lining', 'Includes personalized lapel pins & borders'], '/images/suit-client.png', 10),
-('royal-sherwani', 'Royal Wedding Sherwani', 'Starting from ₹25,000', 'Exquisite traditional wedding sherwanis tailored from hand-embroidered raw silk, banarasi silk, and heavy brocade. Custom fitted for grooms.', 'Award', ARRAY['Handmade zardozi and thread embroidery', 'Premium raw silk & jacquard swatches', 'Custom collar embellishments', 'Coordinated inner kurta & matching stole'], '/images/sherwani-client-1.png', 20),
-('signature-kurta', 'Designer Kurta & Jodhpuri', 'Starting from ₹5,000', 'Sophisticated bandhgala Jodhpuri suits, designer pathani kurtas, and luxury linen kurtas custom contoured for festive and everyday elegance.', 'Layers', ARRAY['Premium Indian linen and silk materials', 'Hand-stitched sleeve cuffs and collar plackets', 'Perfect fall, posture, and side cut structure', 'Includes customized bottoms (Churidar/Salwar)'], '/images/sherwani-client-2.png', 30),
-('fabric-shop', 'Exclusive Fabrics Shop', 'Starting from ₹450 / meter', 'Browse our select collection of imported suiting wools, jacquards, cotton shirtings, and wedding silks from India''s and Italy''s finest mills.', 'Compass', ARRAY['Exclusive Raymond, Reid & Taylor materials', 'Wedding brocades and heavy velvet swatches', 'Premium linen, cotton, and silk shirtings', 'Custom package discounts on fabric + stitching'], '/images/collections-fabric.png', 40)
-ON CONFLICT (id) DO NOTHING;
-
--- Gallery Seed
-INSERT INTO gallery (id, url, alt, sort_order) VALUES
-('gallery-1', '/images/suit-client.png', 'Bespoke Groom Jodhpuri Suit in Jet Black', 10),
-('gallery-2', '/images/sherwani-client-1.png', 'Royal Ivory Silk Wedding Sherwani with Zardozi Collar', 20),
-('gallery-3', '/images/sherwani-client-2.png', 'Embroidered Cream Sherwani and Kurta Ensemble', 30)
-ON CONFLICT (id) DO NOTHING;
-
--- Testimonials Seed
-INSERT INTO testimonials (id, client_name, client_image, review_text, rating, sort_order) VALUES
-(1, 'Marcus Sterling', '/images/suit-client.png', 'The Jodhpuri suit fitting was absolutely flawless. They took the time to map my posture and the result was incredibly comfortable.', 5, 10)
-ON CONFLICT (id) DO NOTHING;
-
--- Services Seed
-INSERT INTO services (id, title, price, description, icon, features, sort_order) VALUES
-('visiting-tailor', 'Visiting Tailor Service', 'On Demand', 'A private fitting consultant travels directly to your residence or hotel in Beed district to measure and consult on wedding packages.', 'Users', ARRAY['Private measuring session at your home', 'Complete fabric swatches brought to you', 'Saves time for busy grooms'], 10)
-ON CONFLICT (id) DO NOTHING;
-
 -- 6. PRODUCTS TABLE (Admin-uploaded lookbook / collection campaign items)
 CREATE TABLE IF NOT EXISTS products (
     id VARCHAR(100) PRIMARY KEY,
@@ -167,8 +135,88 @@ CREATE TABLE IF NOT EXISTS products (
     media_type VARCHAR(50) NOT NULL, -- 'image' or 'video'
     url TEXT NOT NULL,
     thumbnail TEXT,
+    sort_order INT DEFAULT 0,
+    media JSONB NOT NULL DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Note: Ensure to create a public storage bucket named "products" in the Supabase console.
+
+-- 7. AUTOMATED STORAGE BUCKETS SETUP
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('products', 'products', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Setup storage policies safely using a PL/pgSQL block to prevent duplicate errors
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE tablename = 'objects' AND schemaname = 'storage' AND policyname = 'Public Access'
+    ) THEN
+        CREATE POLICY "Public Access" ON storage.objects FOR SELECT TO public USING (bucket_id = 'products');
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE tablename = 'objects' AND schemaname = 'storage' AND policyname = 'Public Upload'
+    ) THEN
+        CREATE POLICY "Public Upload" ON storage.objects FOR INSERT TO public WITH CHECK (bucket_id = 'products');
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE tablename = 'objects' AND schemaname = 'storage' AND policyname = 'Public Delete'
+    ) THEN
+        CREATE POLICY "Public Delete" ON storage.objects FOR DELETE TO public USING (bucket_id = 'products');
+    END IF;
+END
+$$;
+
+-- 8. TABLE ROW LEVEL SECURITY (RLS) POLICIES
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE collections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE gallery ENABLE ROW LEVEL SECURITY;
+ALTER TABLE testimonials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE services ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+
+-- Setup SELECT policies safely using a PL/pgSQL block to prevent duplicate errors
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'settings' AND policyname = 'Allow public select') THEN
+        CREATE POLICY "Allow public select" ON settings FOR SELECT TO public USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Allow public select') THEN
+        CREATE POLICY "Allow public select" ON collections FOR SELECT TO public USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'gallery' AND policyname = 'Allow public select') THEN
+        CREATE POLICY "Allow public select" ON gallery FOR SELECT TO public USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'testimonials' AND policyname = 'Allow public select') THEN
+        CREATE POLICY "Allow public select" ON testimonials FOR SELECT TO public USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'services' AND policyname = 'Allow public select') THEN
+        CREATE POLICY "Allow public select" ON services FOR SELECT TO public USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Allow public select') THEN
+        CREATE POLICY "Allow public select" ON products FOR SELECT TO public USING (true);
+    END IF;
+END
+$$;
+
+-- Setup WRITE policies for products table safely using a PL/pgSQL block
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Allow public insert') THEN
+        CREATE POLICY "Allow public insert" ON products FOR INSERT TO public WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Allow public update') THEN
+        CREATE POLICY "Allow public update" ON products FOR UPDATE TO public USING (true) WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Allow public delete') THEN
+        CREATE POLICY "Allow public delete" ON products FOR DELETE TO public USING (true);
+    END IF;
+END
+$$;
 
