@@ -419,11 +419,11 @@ export default function Home() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:5rem_5rem]" />
       </div>
 
-      {/* SECTION 1: Dynamic Signboard Hero (Split widescreen layout, text overlays black gradient over right-aligned image) */}
-      <div className="relative h-[85vh] sm:h-screen w-full flex items-center justify-start overflow-hidden border-b border-white/5 bg-black">
+      {/* SECTION 1: Dynamic Signboard Hero (Responsive stacked/split layout) */}
+      <div className="relative w-full flex flex-col md:flex-row md:h-screen items-stretch justify-start overflow-hidden border-b border-white/5 bg-black">
         
         {/* Left Column: copy overlay */}
-        <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left space-y-6 max-w-2xl select-none w-full md:w-[50%] px-6 py-8 md:py-0 md:pl-16 lg:pl-24 bg-black/45 md:bg-transparent backdrop-blur-[2px] md:backdrop-blur-none border border-white/5 md:border-transparent rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.5)] md:shadow-none mx-4 md:mx-0">
+        <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left space-y-6 max-w-2xl select-none w-full md:w-[50%] px-6 py-12 md:py-0 md:pl-16 lg:pl-24 justify-center order-2 md:order-1 bg-black md:bg-transparent">
 
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -490,17 +490,17 @@ export default function Home() {
 
         </div>
 
-        {/* Storefront backdrop image (Full height right aligned, parallax and zoom enabled) */}
-        <div className="absolute inset-y-0 right-0 w-full md:w-[65%] z-0 select-none overflow-hidden pointer-events-none">
+        {/* Storefront backdrop image (Responsive layout: stacked on mobile, absolute/widescreen on desktop) */}
+        <div className="relative w-full md:absolute md:inset-y-0 md:right-0 md:w-[65%] h-[45vh] md:h-full z-10 md:z-0 order-1 md:order-2 select-none overflow-hidden pointer-events-none flex-shrink-0">
           <motion.img
             src={getImageUrl(imageConfig.heroImages?.storefront || "/images/signboard.png")}
             alt={`${settings?.site_name || siteConfig.name} Storefront`}
             style={{ y: heroImageParallax, scale: heroImageScale, transformOrigin: "top" }}
-            className="w-full h-full object-cover object-center md:object-right filter brightness-[0.88] contrast-[1.03] saturate-[0.95]"
+            className="w-full h-full object-cover object-center md:object-right filter brightness-[0.9] contrast-[1.03] saturate-[0.95]"
           />
-          {/* Smooth black gradient overlay to blend into the left black panel */}
-          <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-black via-black/40 to-transparent pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
+          {/* Smooth black gradient overlay to blend into the surrounding black panels */}
+          <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black via-black/20 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black to-transparent pointer-events-none" />
         </div>
       </div>
 
