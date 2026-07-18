@@ -3,6 +3,7 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "@/config/router";
 import { themeConfig } from "@/config/theme";
 import { useSettings } from "@/hooks/useDbQueries";
+import { activeClientConfig } from "@/config/activeClient";
 
 export default function App() {
   const { data: settings } = useSettings();
@@ -31,6 +32,13 @@ export default function App() {
     root.style.setProperty("--ambient-glow-color", colors.glowColor.replace("0.15", "0.1"));
     root.style.setProperty("--border-color-glow-start", colors.glowColor.replace("0.15", "0.2"));
     root.style.setProperty("--border-color-glow-end", colors.glowColor.replace("0.15", "0.6"));
+
+    // 2. Dynamic Favicon: Swap the tab icon to the active client's logo
+    const faviconEl = document.getElementById("app-favicon") as HTMLLinkElement | null;
+    if (faviconEl && activeClientConfig.images.logo) {
+      faviconEl.href = activeClientConfig.images.logo;
+      faviconEl.type = "image/png";
+    }
   }, []);
 
   useEffect(() => {
