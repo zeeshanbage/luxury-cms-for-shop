@@ -444,4 +444,104 @@ export async function updateProductsOrder(orderedIds: string[]): Promise<void> {
   if (error) throw error;
 }
 
+export async function createCollection(title: string): Promise<DbCollection> {
+  if (!supabase) throw new Error("Supabase client not initialized");
+
+  // Generate unique URL-friendly ID
+  const baseId = title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  
+  let id = baseId;
+  let attempt = 0;
+  while (true) {
+    const { data: existing } = await supabase
+      .from("collections")
+      .select("id")
+      .eq("id", id)
+      .maybeSingle();
+    if (!existing) break;
+    attempt++;
+    id = `${baseId}-${attempt}`;
+  }
+
+  // Get current max sort order
+  const { data: countData } = await supabase
+    .from("collections")
+    .select("sort_order")
+    .order("sort_order", { ascending: false })
+    .limit(1);
+  const nextOrder = countData && countData.length > 0 ? (countData[0].sort_order ?? 0) + 1 : 0;
+
+  const newCol: DbCollection = {
+    id,
+    title,
+    price: "Starting from ₹1,000",
+    description: `Exquisite custom collection of ${title}`,
+    icon: "Layers",
+    features: ["Premium quality materials", "Custom size fittings available", "Tailored to perfection"],
+    image_url: undefined,
+    sort_order: nextOrder,
+  };
+
+  const { error } = await supabase.from("collections").insert(newCol);
+  if (error) throw error;
+
+  return newCol;
+}
+
+export async function updateCollection(
+  id: string,
+  updates: Partial<DbCollection>
+): Promise<DbCollection> {
+  if (!supabase) throw new Error("Supabase client not initialized");
+
+  const { data, error } = await supabase
+    .from("collections")
+    .update(updates)
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data as DbCollection;
+}
+
+export async function deleteCollection(id: string): Promise<void> {
+  if (!supabase) throw new Error("Supabase client not initialized");
+
+  // Check if any product exists under this collection
+  const { data: products, error: checkError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("category_id", id)
+    .limit(1);
+
+  if (checkError) throw checkError;
+  if (products && products.length > 0) {
+    throw new Error("Cannot delete collection. Move or delete all products inside it first.");
+  }
+
+  const { error } = await supabase.from("collections").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function updateCollectionsOrder(orderedIds: string[]): Promise<void> {
+  const client = supabase;
+  if (!client) throw new Error("Supabase client not initialized");
+
+  const promises = orderedIds.map((id, index) =>
+    client
+      .from("collections")
+      .update({ sort_order: index })
+      .eq("id", id)
+  );
+
+  const results = await Promise.all(promises);
+  const error = results.find(r => r.error)?.error;
+  if (error) throw error;
+}
+
 

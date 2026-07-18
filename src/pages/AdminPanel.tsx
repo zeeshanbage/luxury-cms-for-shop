@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2, Edit, X, GripVertical, Sparkles } from "lucide-react";
+import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2, Edit, X, GripVertical, Sparkles, Settings } from "lucide-react";
 
 import type { Product } from "@/types/db";
-import { getProducts, createProduct, deleteProduct, updateProduct, uploadProductMedia, updateProductsOrder } from "@/services/db";
+import { getProducts, createProduct, deleteProduct, updateProduct, uploadProductMedia, updateProductsOrder, createCollection, updateCollection, deleteCollection, updateCollectionsOrder } from "@/services/db";
 import { useSettings, useCollections } from "@/hooks/useDbQueries";
 import { siteConfig } from "@/config/site";
 import { collectionsConfig } from "@/config/collections";
@@ -262,6 +262,255 @@ function SetPasswordScreen({ onSave }: { onSave: (password: string) => Promise<v
             </button>
           </form>
         </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Collections Manager Modal ────────────────────────────────────────────────
+interface CollectionsManagerModalProps {
+  collections: any[];
+  categoryCounts: Record<string, number>;
+  onClose: () => void;
+  onRefresh: () => void;
+}
+
+function CollectionsManagerModal({
+  collections,
+  categoryCounts,
+  onClose,
+  onRefresh,
+}: CollectionsManagerModalProps) {
+  const [newTitle, setNewTitle] = useState("");
+  const [editingColId, setEditingColId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+    setError(null);
+    setLoading(true);
+    try {
+      await createCollection(newTitle.trim());
+      setNewTitle("");
+      onRefresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to create collection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRenameSave = async (id: string) => {
+    if (!editingTitle.trim()) return;
+    setError(null);
+    setLoading(true);
+    try {
+      await updateCollection(id, { title: editingTitle.trim() });
+      setEditingColId(null);
+      onRefresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to rename collection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCol = async (id: string) => {
+    const counts = categoryCounts[id] ?? 0;
+    if (counts > 0) {
+      setError("Cannot delete collection. Move or delete products inside it first.");
+      return;
+    }
+
+    if (!confirm("Are you sure you want to delete this collection? This action is permanent.")) {
+      return;
+    }
+
+    setError(null);
+    setLoading(true);
+    try {
+      await deleteCollection(id);
+      onRefresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to delete collection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const targetIdx = direction === "up" ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= collections.length) return;
+
+    const list = [...collections];
+    const [moved] = list.splice(index, 1);
+    list.splice(targetIdx, 0, moved);
+
+    setError(null);
+    setLoading(true);
+    try {
+      await updateCollectionsOrder(list.map((c) => c.id));
+      onRefresh();
+    } catch (err: any) {
+      console.error(err);
+      setError("Failed to reorder collections.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 select-text">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        className="w-full max-w-lg bg-luxury-black border border-luxury-gold/30 p-6 rounded-sm shadow-[0_0_80px_rgba(197,168,128,0.2)] space-y-6 flex flex-col max-h-[85vh]"
+      >
+        <div className="flex items-center justify-between border-b border-luxury-gold/10 pb-3">
+          <div className="flex items-center gap-2">
+            <Settings className="text-luxury-gold" size={16} />
+            <h3 className="text-sm font-serif uppercase tracking-widest text-white">
+              Manage Collections
+            </h3>
+          </div>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300">
+            <X size={18} />
+          </button>
+        </div>
+
+        {error && (
+          <div className="p-3 bg-red-500/10 border border-red-500/25 text-red-400 text-xs rounded-sm tracking-wide">
+            ⚠ {error}
+          </div>
+        )}
+
+        {/* List of Collections */}
+        <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 max-h-[45vh]">
+          {collections.map((col, idx) => {
+            const productCount = categoryCounts[col.id] ?? 0;
+            const isEditing = editingColId === col.id;
+
+            return (
+              <div
+                key={col.id}
+                className="flex items-center justify-between bg-white/5 border border-white/5 hover:border-white/10 p-3 rounded-sm gap-4 transition-all"
+              >
+                {/* Reorder Arrows */}
+                <div className="flex flex-col gap-1">
+                  <button
+                    type="button"
+                    disabled={idx === 0 || loading}
+                    onClick={() => handleMove(idx, "up")}
+                    className="p-1 text-zinc-500 hover:text-luxury-gold disabled:opacity-20 disabled:hover:text-zinc-500 transition-colors"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    disabled={idx === collections.length - 1 || loading}
+                    onClick={() => handleMove(idx, "down")}
+                    className="p-1 text-zinc-500 hover:text-luxury-gold disabled:opacity-20 disabled:hover:text-zinc-500 transition-colors"
+                  >
+                    ▼
+                  </button>
+                </div>
+
+                {/* Edit Form or Text Info */}
+                <div className="flex-1 min-w-0">
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        className="flex-1 bg-black/50 border border-luxury-gold/20 focus:border-luxury-gold/50 rounded-sm px-2 py-1 text-xs text-white outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRenameSave(col.id)}
+                        className="px-2.5 py-1 bg-luxury-gold text-black rounded-sm text-[10px] uppercase font-bold tracking-widest"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingColId(null)}
+                        className="px-2.5 py-1 border border-white/10 text-zinc-400 rounded-sm text-[10px] uppercase font-bold tracking-widest"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-xs font-serif text-white font-light tracking-wide truncate">
+                        {col.title}
+                      </p>
+                      <p className="text-[10px] text-zinc-500 tracking-wider font-sans uppercase mt-0.5">
+                        {productCount} {productCount === 1 ? "product" : "products"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Edit / Delete Buttons */}
+                {!isEditing && (
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingColId(col.id);
+                        setEditingTitle(col.title);
+                      }}
+                      className="p-2 text-zinc-500 hover:text-white rounded-full transition-colors"
+                      title="Rename collection"
+                    >
+                      <Edit size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCol(col.id)}
+                      disabled={productCount > 0}
+                      className="p-2 text-zinc-500 hover:text-red-400 disabled:opacity-30 disabled:hover:text-zinc-500 rounded-full transition-colors"
+                      title={productCount > 0 ? "Cannot delete: has products" : "Delete collection"}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Add New Collection Form */}
+        <form onSubmit={handleAdd} className="border-t border-luxury-gold/15 pt-4 space-y-2">
+          <label className="text-[10px] uppercase tracking-widest text-zinc-500 block">
+            Create New Collection
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder="e.g. Kurta & Jacket Set"
+              className="flex-1 bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 outline-none"
+            />
+            <button
+              type="submit"
+              disabled={loading || !newTitle.trim()}
+              className="px-4 bg-luxury-gold hover:brightness-110 text-black font-semibold text-[10px] uppercase tracking-widest rounded-sm transition-all disabled:opacity-40"
+            >
+              Create
+            </button>
+          </div>
+        </form>
       </motion.div>
     </div>
   );
@@ -876,6 +1125,7 @@ export default function AdminPanel() {
   const { data: collections = [] } = useCollections();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [needsPasswordSet, setNeedsPasswordSet] = useState(false);
+  const [showCollectionsManager, setShowCollectionsManager] = useState(false);
   const [activeCategory, setActiveCategory] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -932,10 +1182,15 @@ export default function AdminPanel() {
     ? collections.map(c => ({ id: c.id, label: c.title }))
     : collectionsConfig.map(c => ({ id: c.id, label: c.title }));
 
-  // Set initial category when categories load
+  // Set initial category when categories load, or reset it if current activeCategory is deleted
   useEffect(() => {
-    if (categories.length > 0 && !activeCategory) {
-      setActiveCategory(categories[0].id);
+    if (categories.length > 0) {
+      const exists = categories.some((c) => c.id === activeCategory);
+      if (!activeCategory || !exists) {
+        setActiveCategory(categories[0].id);
+      }
+    } else {
+      setActiveCategory("");
     }
   }, [categories, activeCategory]);
 
@@ -1092,6 +1347,13 @@ export default function AdminPanel() {
               </button>
             );
           })}
+
+          <button
+            onClick={() => setShowCollectionsManager(true)}
+            className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] tracking-[0.25em] uppercase font-sans font-semibold rounded-full bg-white/5 border border-luxury-gold/20 text-luxury-gold hover:bg-luxury-gold/5 transition-all"
+          >
+            <Settings size={12} /> Manage Collections
+          </button>
         </div>
 
         {/* Add button row */}
@@ -1208,6 +1470,19 @@ export default function AdminPanel() {
             categoryId={activeCategory}
             onSave={handleEditSave}
             onClose={() => setEditingProduct(null)}
+          />
+        )}
+      </AnimatePresence>
+      {/* Collections Manager Modal Overlay */}
+      <AnimatePresence>
+        {showCollectionsManager && (
+          <CollectionsManagerModal
+            collections={collections}
+            categoryCounts={categoryCounts}
+            onClose={() => setShowCollectionsManager(false)}
+            onRefresh={() => {
+              queryClient.invalidateQueries({ queryKey: ["collections"] });
+            }}
           />
         )}
       </AnimatePresence>

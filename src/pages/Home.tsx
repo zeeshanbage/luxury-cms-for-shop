@@ -506,14 +506,14 @@ export default function Home() {
 
       {/* SECTION 2: Sticky selector capsule pill bar */}
       <div className="sticky top-6 z-40 w-full flex justify-center py-3 select-none pointer-events-none">
-        <div className="pointer-events-auto flex items-center space-x-1 md:space-x-2 bg-[#09090b]/80 border border-white/5 px-4 md:px-6 py-2.5 rounded-full backdrop-blur-lg shadow-2xl relative">
+        <div className="pointer-events-auto flex items-center space-x-1 md:space-x-2 bg-[#09090b]/80 border border-white/5 px-4 md:px-6 py-2.5 rounded-full backdrop-blur-lg shadow-2xl relative overflow-x-auto scrollbar-none max-w-[92vw] md:max-w-none whitespace-nowrap flex-nowrap scroll-smooth">
           {categories.map((cat) => {
             const isActive = activeCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold outline-none transition-colors duration-150 ${
+                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold outline-none transition-colors duration-150 flex-shrink-0 whitespace-nowrap ${
                   isActive ? "text-black" : "text-zinc-500 hover:text-zinc-200"
                 }`}
               >
