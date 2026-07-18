@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "SEEMA SAREES BEED",
+  name: "SEEMA SAREE CENTER",
   subName: "Wholesale & Retail",
   tagline: "Ladies Suits, Dress Materials, Sarees & Burqas",
   description: "Step into Seema Sarees, your premier destination for the finest ladies suits, designer dress materials, exclusive sarees, and custom-tailored burqas/abayas in Beed, Maharashtra.",
@@ -8,7 +8,7 @@ export const siteConfig = {
   ogTitle: "Seema Sarees Beed | Premium Sarees & Dress Materials",
   ogDescription: "Stunning traditional sarees, designer suits, unstitched dress materials, and elegant burqas at Seema Saree Center.",
   foundedYear: 2005,
-  
+
   // About Page details
   philosophy: {
     title: "Seema Heritage",

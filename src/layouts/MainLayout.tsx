@@ -15,7 +15,7 @@ const StorefrontLogo = () => {
       <img
         src={getImageUrl((imageConfig as any).logo || "/images/brand-logo.png")}
         alt={settings?.site_name || siteConfig.name}
-        className="h-14 sm:h-18 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(197,168,128,0.25)] transition-all duration-300 hover:scale-[1.02]"
+        className="h-10 sm:h-14 md:h-16 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(197,168,128,0.25)] transition-all duration-300 hover:scale-[1.02]"
       />
     </div>
   );
@@ -61,7 +61,7 @@ export default function MainLayout() {
     <div className="flex flex-col min-h-screen bg-luxury-black text-zinc-100 selection:bg-luxury-gold selection:text-black">
       {/* Premium Static Header (Not sticky, scrolls away naturally) */}
       <header className="relative w-full h-28 bg-[#030303] border-b border-white/5 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-full grid grid-cols-3 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex md:grid md:grid-cols-3 items-center justify-between">
           
           {/* Left: Navigation links */}
           <div className="hidden md:flex items-center space-x-8 text-[10px] tracking-[0.25em] uppercase font-semibold font-sans">
@@ -72,12 +72,10 @@ export default function MainLayout() {
             }} className="text-zinc-400 hover:text-luxury-gold transition-colors duration-300">Lookbook</a>
             <Link to="/admin" className="text-zinc-400 hover:text-luxury-gold transition-colors duration-300">Admin</Link>
           </div>
-          {/* Mobile spacer */}
-          <div className="md:hidden" />
 
           {/* Center: Logo */}
-          <div className="flex justify-center">
-            <Link to="/" className="group py-1 flex flex-col items-center select-none">
+          <div className="flex justify-center flex-1 md:flex-initial">
+            <Link to="/" className="group py-1 flex flex-col items-center select-none max-w-[160px] sm:max-w-none">
               <StorefrontLogo />
             </Link>
           </div>
@@ -86,7 +84,7 @@ export default function MainLayout() {
           <div className="flex justify-end items-center">
             <Link
               to="/contact"
-              className="relative px-6 py-2.5 text-xs tracking-widest uppercase border border-luxury-gold/40 text-luxury-gold hover:text-black font-sans font-medium transition-all duration-500 overflow-hidden group rounded-sm"
+              className="relative px-4 sm:px-6 py-2 sm:py-2.5 text-[10px] sm:text-xs tracking-widest uppercase border border-luxury-gold/40 text-luxury-gold hover:text-black font-sans font-medium transition-all duration-500 overflow-hidden group rounded-sm"
             >
               <span className="absolute inset-0 w-full h-full bg-luxury-gold transform scale-x-0 origin-left transition-transform duration-500 group-hover:scale-x-100 -z-10" />
               Contact

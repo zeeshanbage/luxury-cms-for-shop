@@ -423,7 +423,7 @@ export default function Home() {
       <div className="relative h-[85vh] sm:h-screen w-full flex items-center justify-start overflow-hidden border-b border-white/5 bg-black">
         
         {/* Left Column: copy overlay */}
-        <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left space-y-6 max-w-2xl select-none w-full md:w-[50%] px-6 md:pl-16 lg:pl-24">
+        <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left space-y-6 max-w-2xl select-none w-full md:w-[50%] px-6 py-8 md:py-0 md:pl-16 lg:pl-24 bg-black/45 md:bg-transparent backdrop-blur-[2px] md:backdrop-blur-none border border-white/5 md:border-transparent rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.5)] md:shadow-none mx-4 md:mx-0">
 
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -440,7 +440,7 @@ export default function Home() {
               initial={{ y: "100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="text-4xl sm:text-6xl md:text-5xl lg:text-7xl xl:text-8xl font-light tracking-wide font-serif text-white leading-none uppercase"
+              className="text-[2.2rem] sm:text-6xl md:text-5xl lg:text-7xl xl:text-8xl font-bold md:font-light tracking-wide font-serif text-white leading-none uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]"
             >
               {settings?.site_name || siteConfig.name}
             </motion.h1>
@@ -451,7 +451,7 @@ export default function Home() {
               initial={{ y: "100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-base sm:text-2xl tracking-[0.3em] font-serif text-luxury-gold font-light italic"
+              className="text-lg sm:text-2xl tracking-[0.3em] font-serif text-luxury-gold font-semibold md:font-light italic drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
             >
               {settings?.site_sub_name || siteConfig.subName}
             </motion.p>
@@ -461,12 +461,12 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.3 }}
-            className="flex flex-col items-center md:items-start space-y-3 pt-2"
+            className="flex flex-col items-center md:items-start space-y-3 pt-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
           >
-            <p className="text-zinc-300 font-light text-xs sm:text-sm tracking-wider leading-relaxed max-w-lg">
+            <p className="text-zinc-100 md:text-zinc-300 font-medium md:font-light text-xs sm:text-sm tracking-wider leading-relaxed max-w-lg">
               {settings?.site_tagline || siteConfig.tagline}
             </p>
-            <span className="text-[10px] tracking-[0.15em] text-zinc-500 uppercase font-sans">
+            <span className="text-[10px] tracking-[0.15em] text-zinc-300 md:text-zinc-500 uppercase font-sans font-semibold">
               {settings?.address 
                 ? settings.address 
                 : (siteConfig as any).address || "Beed, Maharashtra"}
