@@ -21,3 +21,36 @@ As the AI coding assistant for this workspace, you must adhere to the following 
 5. **Linting & Code Integrity**:
    - Ensure clean compilation with TypeScript and run `npm run build` to verify changes.
    - Preserve all existing code comments, docstrings, and layout structure unless explicitly instructed otherwise.
+
+6. **Supabase RLS (Row Level Security) — MANDATORY FOR EVERY NEW TABLE**:
+   - **The Supabase portal has RLS enabled by default.** Any table created without explicit write policies will silently return `204 No Content` on DELETE/UPDATE/INSERT but mutate **zero rows**. This is a silent failure that is very hard to debug.
+   - **Every time a new table is added to [supabase_schema.sql](file:///c:/Users/zeesh/.gemini/antigravity-ide/scratch/luxury-tailor-web/supabase_schema.sql), you MUST immediately append the corresponding RLS policies block below the table definition.**
+   - Use the following template for every new table (replace `<table_name>`):
+     ```sql
+     -- RLS: Enable and set policies for <table_name>
+     ALTER TABLE <table_name> ENABLE ROW LEVEL SECURITY;
+
+     DO $$
+     BEGIN
+         -- Public read (always required)
+         IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = '<table_name>' AND policyname = 'Allow public select') THEN
+             CREATE POLICY "Allow public select" ON <table_name> FOR SELECT TO public USING (true);
+         END IF;
+         -- Write policies (required if the app mutates this table)
+         IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = '<table_name>' AND policyname = 'Allow public insert') THEN
+             CREATE POLICY "Allow public insert" ON <table_name> FOR INSERT TO public WITH CHECK (true);
+         END IF;
+         IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = '<table_name>' AND policyname = 'Allow public update') THEN
+             CREATE POLICY "Allow public update" ON <table_name> FOR UPDATE TO public USING (true) WITH CHECK (true);
+         END IF;
+         IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = '<table_name>' AND policyname = 'Allow public delete') THEN
+             CREATE POLICY "Allow public delete" ON <table_name> FOR DELETE TO public USING (true);
+         END IF;
+     END
+     $$;
+     ```
+   - **Always add RLS-aware error detection in [db.ts](file:///c:/Users/zeesh/.gemini/antigravity-ide/scratch/luxury-tailor-web/src/services/db.ts)** for any write service function on a new table:
+     - For DELETE: use `delete({ count: 'exact' })` and throw if `count === 0`.
+     - For UPDATE: check if returned `data` is null / error code `PGRST116` and throw a descriptive error.
+     - For INSERT: check for error code `42501` or message containing `"policy"`.
+   - **Diagnosis tip**: If a Supabase write operation returns 204 but nothing changes in the DB, it is always an RLS policy problem. Run `SELECT tablename, policyname, cmd FROM pg_policies WHERE tablename = '<table_name>';` in the SQL editor to verify.

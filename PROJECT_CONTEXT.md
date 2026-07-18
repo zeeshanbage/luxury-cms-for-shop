@@ -120,3 +120,59 @@ To preserve the brand's luxury positioning, always follow these rules during UI 
    *Note: Oxlint is configured in `.oxlintrc.json` for lightweight linting. Ensure typescript compiling parses clean without warnings.*
 3. **Database Setup**:
    The migration file `supabase_schema.sql` contains the queries to build all tables (with RLS policies and table triggers) directly on Supabase.
+
+---
+
+## 7. Supabase RLS — Mandatory Checklist for New Tables
+
+> **⚠️ The Supabase portal enables Row Level Security (RLS) on all tables by default.**
+
+This causes a critical silent failure: any write operation (`INSERT`, `UPDATE`, `DELETE`) via the `anon` key returns `204 No Content` but **mutates zero rows** if the corresponding policy is missing. It looks like success in the browser network tab — but nothing is saved.
+
+### Rule: Always follow this 4-step checklist when creating a new table
+
+| Step | Action |
+|------|--------|
+| 1 | Write the `CREATE TABLE IF NOT EXISTS` definition |
+| 2 | `ALTER TABLE <table_name> ENABLE ROW LEVEL SECURITY;` |
+| 3 | Add a `SELECT` policy (required for any public read) |
+| 4 | Add `INSERT` / `UPDATE` / `DELETE` policies for any table the app writes to |
+
+### Safe reusable SQL template (copy-paste for each new table)
+```sql
+-- RLS policies for <table_name>
+ALTER TABLE <table_name> ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = '<table_name>' AND policyname = 'Allow public select') THEN
+        CREATE POLICY "Allow public select" ON <table_name> FOR SELECT TO public USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = '<table_name>' AND policyname = 'Allow public insert') THEN
+        CREATE POLICY "Allow public insert" ON <table_name> FOR INSERT TO public WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = '<table_name>' AND policyname = 'Allow public update') THEN
+        CREATE POLICY "Allow public update" ON <table_name> FOR UPDATE TO public USING (true) WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = '<table_name>' AND policyname = 'Allow public delete') THEN
+        CREATE POLICY "Allow public delete" ON <table_name> FOR DELETE TO public USING (true);
+    END IF;
+END
+$$;
+```
+
+### RLS-aware error detection pattern in `db.ts`
+Every service function that writes to a new table must detect silent RLS blocks:
+- **DELETE**: use `delete({ count: 'exact' })` → throw if `count === 0`
+- **UPDATE**: use `.select('*').single()` → throw on `PGRST116` or null `data`
+- **INSERT**: check for error code `42501` or message containing `"policy"`
+
+### Diagnosing a silent block
+Run in the Supabase SQL Editor:
+```sql
+SELECT tablename, policyname, cmd, roles
+FROM pg_policies
+WHERE tablename = '<table_name>'
+ORDER BY cmd;
+```
+If `INSERT`, `UPDATE`, or `DELETE` rows are missing — that is the cause.

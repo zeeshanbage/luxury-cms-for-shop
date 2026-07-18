@@ -1,4 +1,33 @@
--- Migration file to set up Fashion King Beed showroom tables on Supabase
+-- ============================================================
+-- Supabase Schema: Fashion King / Seema Sarees (Multi-client)
+-- ============================================================
+--
+-- ⚠️  MANDATORY RLS RULE — READ BEFORE ADDING ANY TABLE ⚠️
+--
+-- The Supabase portal has Row Level Security (RLS) ENABLED BY DEFAULT.
+-- This means: when you create a new table, ALL writes (INSERT / UPDATE / DELETE)
+-- are silently blocked for the anon key unless you add explicit policies.
+-- The API returns 204 No Content as if it succeeded — but NOTHING is saved.
+--
+-- CHECKLIST FOR EVERY NEW TABLE:
+--   1. Add the table definition (CREATE TABLE IF NOT EXISTS ...)
+--   2. Enable RLS:     ALTER TABLE <table_name> ENABLE ROW LEVEL SECURITY;
+--   3. Add a SELECT policy (public read):
+--        CREATE POLICY "Allow public select" ON <table_name> FOR SELECT TO public USING (true);
+--   4. If the app writes to this table, also add:
+--        CREATE POLICY "Allow public insert" ON <table_name> FOR INSERT TO public WITH CHECK (true);
+--        CREATE POLICY "Allow public update" ON <table_name> FOR UPDATE TO public USING (true) WITH CHECK (true);
+--        CREATE POLICY "Allow public delete" ON <table_name> FOR DELETE TO public USING (true);
+--
+-- Use the safe DO $$ BEGIN ... END $$; pattern (shown below) so re-running the
+-- migration does NOT throw "policy already exists" errors.
+--
+-- DEBUGGING TIP: If a write returns 204 but the DB is unchanged, run:
+--   SELECT tablename, policyname, cmd FROM pg_policies WHERE tablename = '<table_name>';
+-- Missing rows = missing policy = silent block.
+-- ============================================================
+
+-- Migration file to set up Fashion King / Seema Sarees tables on Supabase
 
 -- 1. SETTINGS TABLE
 CREATE TABLE IF NOT EXISTS settings (
@@ -216,6 +245,22 @@ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Allow public delete') THEN
         CREATE POLICY "Allow public delete" ON products FOR DELETE TO public USING (true);
+    END IF;
+END
+$$;
+
+-- Setup WRITE policies for collections table safely using a PL/pgSQL block
+-- NOTE: Without these, Supabase silently returns 204 but does NOT mutate any rows.
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Allow public insert') THEN
+        CREATE POLICY "Allow public insert" ON collections FOR INSERT TO public WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Allow public update') THEN
+        CREATE POLICY "Allow public update" ON collections FOR UPDATE TO public USING (true) WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Allow public delete') THEN
+        CREATE POLICY "Allow public delete" ON collections FOR DELETE TO public USING (true);
     END IF;
 END
 $$;

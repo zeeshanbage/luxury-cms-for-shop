@@ -385,14 +385,19 @@ export async function updateProduct(
     ...extraFields,
   };
 
-  const { data, error } = await supabase
+  // NOTE: Do NOT use .single() here — RLS block returns 0 rows and .single() throws 406.
+  const { data: rows, error } = await supabase
     .from("products")
     .update(dbUpdates)
     .eq("id", productId)
-    .select("*")
-    .single();
+    .select("*");
 
   if (error) throw error;
+
+  const data = rows?.[0];
+  if (!data) {
+    throw new Error(`Product update failed — no rows were modified. Check RLS policies on the products table.`);
+  }
 
   const dbMedia = Array.isArray(data.media) && data.media.length > 0 ? data.media : null;
   const mediaItems: MediaItem[] = dbMedia ? dbMedia.map((m: any) => ({
@@ -487,7 +492,16 @@ export async function createCollection(title: string): Promise<DbCollection> {
   };
 
   const { error } = await supabase.from("collections").insert(newCol);
-  if (error) throw error;
+  if (error) {
+    // 42501 = RLS violation / insufficient privilege
+    if (error.code === "42501" || error.message?.includes("policy")) {
+      throw new Error(
+        `Collection insert was blocked by Supabase RLS — the collections table is missing an INSERT policy. ` +
+        `Run scripts/fix_collections_rls.sql in your Supabase SQL editor to fix this.`
+      );
+    }
+    throw error;
+  }
 
   return newCol;
 }
@@ -498,16 +512,28 @@ export async function updateCollection(
 ): Promise<DbCollection> {
   if (!supabase) throw new Error("Supabase client not initialized");
 
+  // NOTE: Do NOT use .single() here — if RLS silently blocks the UPDATE,
+  // PostgREST returns 0 rows and .single() throws 406 Not Acceptable.
+  // Using array select + data[0] check handles this cleanly.
   const { data, error } = await supabase
     .from("collections")
     .update(updates)
     .eq("id", id)
-    .select("*")
-    .single();
+    .select("*");
 
   if (error) throw error;
-  return data as DbCollection;
+
+  const updated = data?.[0];
+  if (!updated) {
+    throw new Error(
+      `Collection update failed — no rows were modified.\n` +
+      `This is caused by a missing RLS UPDATE policy on the collections table.\n` +
+      `Run scripts/fix_collections_rls.sql in your Supabase SQL editor (for BOTH projects: fashionking + seemasarees).`
+    );
+  }
+  return updated as DbCollection;
 }
+
 
 export async function deleteCollection(id: string): Promise<void> {
   if (!supabase) throw new Error("Supabase client not initialized");
@@ -524,8 +550,20 @@ export async function deleteCollection(id: string): Promise<void> {
     throw new Error("Cannot delete collection. Move or delete all products inside it first.");
   }
 
-  const { error } = await supabase.from("collections").delete().eq("id", id);
+  // Use count to detect RLS silent block (204 with 0 rows affected)
+  const { error, count } = await supabase
+    .from("collections")
+    .delete({ count: "exact" })
+    .eq("id", id);
+
   if (error) throw error;
+
+  if (count === 0) {
+    throw new Error(
+      `Collection delete was blocked by Supabase RLS — the collections table is missing a DELETE policy. ` +
+      `Run scripts/fix_collections_rls.sql in your Supabase SQL editor to fix this.`
+    );
+  }
 }
 
 export async function updateCollectionsOrder(orderedIds: string[]): Promise<void> {
