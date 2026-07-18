@@ -57,6 +57,7 @@ export function useProducts(categoryId: string) {
     queryKey: ["products", categoryId],
     queryFn: () => getProducts(categoryId),
     staleTime: 1000 * 60 * 2, // 2 minutes (shorter for product updates)
+    enabled: !!categoryId,    // Don't fire when categoryId is empty — avoids ?category_id=eq. bug
   });
 }
 
