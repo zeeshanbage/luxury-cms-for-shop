@@ -1,15 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2, Edit, X, GripVertical } from "lucide-react";
+import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2, Edit, X, GripVertical, Sparkles } from "lucide-react";
 
 import type { Product } from "@/types/db";
 import { getProducts, createProduct, deleteProduct, updateProduct, uploadProductMedia, updateProductsOrder } from "@/services/db";
 import { useSettings, useCollections } from "@/hooks/useDbQueries";
 import { siteConfig } from "@/config/site";
 import { collectionsConfig } from "@/config/collections";
-
-const ADMIN_PASSWORD = "admin1188";
+import { supabase } from "@/services/supabase";
 
 // ─── File → base64 URL ───────────────────────────────────────────────────────
 function fileToDataUrl(file: File): Promise<string> {
@@ -24,24 +23,56 @@ function fileToDataUrl(file: File): Promise<string> {
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const { data: settings } = useSettings();
-  const [pw, setPw] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [error, setError] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pw === ADMIN_PASSWORD) {
-      onLogin();
-    } else {
-      setError(true);
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (supabase) {
+        const { error: authError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password,
+        });
+        if (authError) throw authError;
+        onLogin();
+      } else {
+        // Local Fallback Mode
+        const clientDomain = (settings?.site_name || siteConfig.name)
+          .toLowerCase()
+          .replace(/\s+/g, "");
+        const mockEmail = `admin@${clientDomain || "seemasarees"}.com`;
+        
+        if (email.trim() === mockEmail && password === "admin1188") {
+          localStorage.setItem("mock_logged_in", "true");
+          onLogin();
+        } else {
+          throw new Error(`Invalid credentials. For local mock access use:\nEmail: ${mockEmail}\nPassword: admin1188`);
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || "Authentication failed. Please verify credentials.");
       setShake(true);
       setTimeout(() => setShake(false), 500);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const clientDomain = (settings?.site_name || siteConfig.name)
+    .toLowerCase()
+    .replace(/\s+/g, "");
+  const mockEmail = `admin@${clientDomain || "seemasarees"}.com`;
+
   return (
-    <div className="min-h-screen bg-luxury-black flex items-center justify-center px-4">
+    <div className="min-h-screen bg-luxury-black flex items-center justify-center px-4 select-text">
       <motion.div
         animate={shake ? { x: [-10, 10, -8, 8, -4, 4, 0] } : {}}
         transition={{ duration: 0.4 }}
@@ -60,33 +91,174 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="relative">
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest text-zinc-500">Email Address</label>
               <input
-                type={showPw ? "text" : "password"}
-                value={pw}
-                onChange={(e) => { setPw(e.target.value); setError(false); }}
-                placeholder="Enter admin password"
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(null); }}
+                placeholder={!supabase ? mockEmail : "admin@example.com"}
                 autoFocus
-                className={`w-full bg-black/40 border ${error ? "border-red-500/60" : "border-luxury-gold/15"} focus:border-luxury-gold/50 rounded-sm px-4 py-3.5 text-sm text-white placeholder-zinc-600 outline-none transition-all pr-12`}
+                required
+                className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all"
               />
-              <button
-                type="button"
-                onClick={() => setShowPw(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
-              >
-                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+            </div>
+
+            <div className="space-y-1 relative">
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] uppercase tracking-widest text-zinc-500">Password</label>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                  placeholder="••••••••"
+                  required
+                  className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none transition-all pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             {error && (
-              <p className="text-red-400 text-xs text-center tracking-wider">Incorrect password. Try again.</p>
+              <p className="text-red-400 text-[11px] text-center tracking-wide leading-relaxed bg-red-500/5 border border-red-500/10 p-2.5 rounded-sm whitespace-pre-line">
+                {error}
+              </p>
             )}
 
             <button
               type="submit"
-              className="w-full py-3.5 bg-luxury-gold hover:brightness-110 text-black font-sans font-semibold tracking-widest text-xs uppercase rounded-sm transition-all duration-300"
+              disabled={loading}
+              className="w-full py-3.5 bg-luxury-gold hover:brightness-110 text-black font-sans font-semibold tracking-widest text-xs uppercase rounded-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              Unlock Studio
+              {loading ? (
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Unlock Studio"
+              )}
+            </button>
+          </form>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Set Password Screen ──────────────────────────────────────────────────────
+function SetPasswordScreen({ onSave }: { onSave: (password: string) => Promise<void> }) {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onSave(password);
+    } catch (err: any) {
+      setError(err.message || "Failed to set password. Please try again.");
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-luxury-black flex items-center justify-center px-4 select-text">
+      <motion.div
+        animate={shake ? { x: [-10, 10, -8, 8, -4, 4, 0] } : {}}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-sm"
+      >
+        <div className="glass-card p-10 rounded-sm border border-luxury-gold/20 space-y-8 shadow-[0_0_60px_rgba(197,168,128,0.1)]">
+          {/* Lock icon */}
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-14 h-14 rounded-full bg-luxury-gold/10 border border-luxury-gold/20 flex items-center justify-center">
+              <Sparkles size={22} className="text-luxury-gold animate-pulse" />
+            </div>
+            <div className="text-center">
+              <h1 className="text-xl font-serif font-light tracking-widest text-white uppercase">Set Password</h1>
+              <p className="text-[10px] tracking-[0.3em] text-zinc-500 mt-1 uppercase">Configure your admin credentials</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1 relative">
+              <label className="text-[10px] uppercase tracking-widest text-zinc-500">New Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                  placeholder="••••••••"
+                  required
+                  className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none transition-all pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest text-zinc-500">Confirm Password</label>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => { setConfirmPassword(e.target.value); setError(null); }}
+                placeholder="••••••••"
+                required
+                className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none transition-all pr-12"
+              />
+            </div>
+
+            {error && (
+              <p className="text-red-400 text-[11px] text-center tracking-wide leading-relaxed bg-red-500/5 border border-red-500/10 p-2.5 rounded-sm whitespace-pre-line">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 bg-luxury-gold hover:brightness-110 text-black font-sans font-semibold tracking-widest text-xs uppercase rounded-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Save Password"
+              )}
             </button>
           </form>
         </div>
@@ -703,11 +875,57 @@ export default function AdminPanel() {
   const { data: settings } = useSettings();
   const { data: collections = [] } = useCollections();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [needsPasswordSet, setNeedsPasswordSet] = useState(false);
   const [activeCategory, setActiveCategory] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+
+  // Check auth session on mount and listen to changes
+  useEffect(() => {
+    if (supabase) {
+      // Detect if landing from invite/recovery URL hash or query parameters
+      const isInviteLink = window.location.hash.includes("type=invite") || 
+                           window.location.hash.includes("type=recovery") ||
+                           window.location.href.includes("type=invite") ||
+                           window.location.href.includes("type=recovery");
+
+      // 1. Get initial session
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setIsLoggedIn(!!session);
+        if (session && isInviteLink) {
+          setNeedsPasswordSet(true);
+        }
+      });
+
+      // 2. Set up auth state change listener
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        setIsLoggedIn(!!session);
+        if (session && (event === "PASSWORD_RECOVERY" || isInviteLink)) {
+          setNeedsPasswordSet(true);
+        }
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    } else {
+      // Fallback check
+      const mockSession = localStorage.getItem("mock_logged_in") === "true";
+      setIsLoggedIn(mockSession);
+    }
+  }, []);
+
+  const handleSavePassword = async (newPassword: string) => {
+    if (supabase) {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      // Clean hash parameter from address bar
+      window.history.replaceState(null, "", window.location.pathname);
+      setNeedsPasswordSet(false);
+    }
+  };
 
   // Dynamic categories list
   const categories = collections.length > 0
@@ -811,13 +1029,22 @@ export default function AdminPanel() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+    } else {
+      localStorage.removeItem("mock_logged_in");
+    }
     setIsLoggedIn(false);
     setShowAddForm(false);
   };
 
   if (!isLoggedIn) {
     return <LoginScreen onLogin={() => setIsLoggedIn(true)} />;
+  }
+
+  if (needsPasswordSet) {
+    return <SetPasswordScreen onSave={handleSavePassword} />;
   }
 
   return (
