@@ -73,9 +73,9 @@ export default function MainLayout() {
             <Link to="/admin" className="text-zinc-400 hover:text-luxury-gold transition-colors duration-300">Admin</Link>
           </div>
 
-          {/* Center: Logo */}
-          <div className="flex justify-center flex-1 md:flex-initial">
-            <Link to="/" className="group py-1 flex flex-col items-center select-none max-w-[160px] sm:max-w-none">
+          {/* Center/Left: Logo */}
+          <div className="flex justify-start md:justify-center flex-1 md:flex-initial">
+            <Link to="/" className="group py-1 flex flex-col items-start md:items-center select-none max-w-[160px] sm:max-w-none">
               <StorefrontLogo />
             </Link>
           </div>
