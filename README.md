@@ -28,8 +28,8 @@ A dynamic, white-label e-commerce showcase, digital lookbook, and CMS built for 
 
 ### 1. Clone & Install
 ```bash
-git clone https://github.com/zeeshanbage/c.git
-cd c
+git clone https://github.com/zeeshanbage/luxury-cms-for-shop.git
+cd luxury-cms-for-shop
 npm install
 ```
 

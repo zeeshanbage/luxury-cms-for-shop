@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   motion,
   AnimatePresence,
   useScroll,
   useTransform,
   useMotionValue,
-  useSpring
+  useSpring,
+  useInView
 } from "framer-motion";
 import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { getImageUrl } from "@/utils/image";
@@ -206,6 +207,9 @@ function ProductCampaign({
   const [direction, setDirection] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(containerRef, { amount: 0.4 });
+
   const mediaCount = mediaList.length;
 
   const handleNext = () => {
@@ -220,9 +224,9 @@ function ProductCampaign({
     setActiveIdx((prev) => (prev - 1 + mediaCount) % mediaCount);
   };
 
-  // Auto-slideshow timer (cycles images every 5s, videos every 12s if multiple media and not paused)
+  // Auto-slideshow timer (ONLY auto-cycles when this specific product campaign is focused/visible in viewport)
   useEffect(() => {
-    if (mediaCount <= 1 || isPaused) return;
+    if (mediaCount <= 1 || isPaused || !isInView) return;
 
     const currentMedia = mediaList[activeIdx] || mediaList[0];
     const slideDuration = currentMedia?.type === "video" ? 12000 : 5000;
@@ -233,7 +237,7 @@ function ProductCampaign({
     }, slideDuration);
 
     return () => clearInterval(timer);
-  }, [mediaCount, isPaused, activeIdx, mediaList]);
+  }, [mediaCount, isPaused, activeIdx, mediaList, isInView]);
 
   // Touch & Mouse Drag gesture handler
   const dragThreshold = 40;
@@ -279,7 +283,7 @@ function ProductCampaign({
   };
 
   return (
-    <div className="relative h-screen w-full flex items-center justify-center border-b border-white/5 bg-luxury-black overflow-hidden py-12 md:py-0 select-none">
+    <div ref={containerRef} className="relative h-screen w-full flex items-center justify-center border-b border-white/5 bg-luxury-black overflow-hidden py-12 md:py-0 select-none">
 
       {/* Full-bleed background media cover */}
       <div 
