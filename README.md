@@ -1,32 +1,59 @@
-# React + TypeScript + Vite
+# Atelier CMS / Bespoke Web ✦
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A dynamic, white-label e-commerce showcase, digital lookbook, and CMS built for luxury tailor houses, couture brands, and bespoke retail.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📸 Screenshots
 
-## React Compiler
+| Landing Showroom | Digital Lookbook Grid |
+|---|---|
+| ![Landing Page](public/docs/screenshots/hero.png) | ![Lookbook Grid](public/docs/screenshots/lookbook.png) |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Contact & Boutique Details |
+|---|
+| ![Contact Page](public/docs/screenshots/contact.png) |
 
-## Expanding the Oxlint configuration
+---
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## ✨ Highlights
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+- **Multi-Tenant / Multi-Client Architecture**: Instantly switch client themes, branding, catalogs, and media assets using standard environment variables (`VITE_ACTIVE_CLIENT`).
+- **Hybrid Data Engine**: Operates seamlessly with **Supabase** live database OR zero-config **Local Fallback Mode** (reads static config & mutates `localStorage`).
+- **Luxury Aesthetic**: Dark charcoal palette (`#030303`), gold accents (`#C5A880`), glassmorphism, and smooth Framer Motion micro-animations.
+
+---
+
+## ⚡ Quick Setup
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/zeeshanbage/c.git
+cd c
+npm install
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### 2. Environment Configuration
+Create a `.env` file in the root directory:
+```env
+VITE_ACTIVE_CLIENT=fashionking
+# Optional: Supabase for live DB
+# VITE_SUPABASE_URL=https://your-supabase-url.supabase.co
+# VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### 3. Run Locally
+```bash
+npm run dev
+```
+Open **`http://localhost:5173`** in your browser.
+
+---
+
+## 🛠 Tech Stack
+
+- **Frontend**: React 19 + TypeScript + Vite
+- **Styling**: TailwindCSS (v3) + Vanilla CSS Glassmorphism
+- **Animations**: Framer Motion
+- **Database**: Supabase JS Client (with Local Storage fallback)
+- **Icons**: Lucide React
