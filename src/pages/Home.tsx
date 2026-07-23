@@ -197,38 +197,124 @@ function ProductCampaign({
   // Determine if this is a landscape product (e.g. fabric swatches) or a portrait suit/sherwani campaign
   const isLandscape = item.id.toLowerCase().includes("fabric") || item.id.toLowerCase().includes("swatch");
 
-  // Load the primary hero media item
-  const primaryMedia = item.media[0] || { type: "image", url: item.heroMedia.url, focalPoint: { x: 50, y: 50 } };
+  // Media items list
+  const mediaList = item.media && item.media.length > 0
+    ? item.media
+    : [{ type: "image" as const, url: item.heroMedia.url, focalPoint: { x: 50, y: 50 } }];
+
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const mediaCount = mediaList.length;
+
+  const handleNext = () => {
+    if (mediaCount <= 1) return;
+    setDirection(1);
+    setActiveIdx((prev) => (prev + 1) % mediaCount);
+  };
+
+  const handlePrev = () => {
+    if (mediaCount <= 1) return;
+    setDirection(-1);
+    setActiveIdx((prev) => (prev - 1 + mediaCount) % mediaCount);
+  };
+
+  // Auto-slideshow timer (cycles images every 5s, videos every 12s if multiple media and not paused)
+  useEffect(() => {
+    if (mediaCount <= 1 || isPaused) return;
+
+    const currentMedia = mediaList[activeIdx] || mediaList[0];
+    const slideDuration = currentMedia?.type === "video" ? 12000 : 5000;
+
+    const timer = setInterval(() => {
+      setDirection(1);
+      setActiveIdx((prev) => (prev + 1) % mediaCount);
+    }, slideDuration);
+
+    return () => clearInterval(timer);
+  }, [mediaCount, isPaused, activeIdx, mediaList]);
+
+  // Touch & Mouse Drag gesture handler
+  const dragThreshold = 40;
+  const handleDragEnd = (_: any, info: any) => {
+    if (info.offset.x < -dragThreshold || info.velocity.x < -200) {
+      handleNext();
+    } else if (info.offset.x > dragThreshold || info.velocity.x > 200) {
+      handlePrev();
+    }
+  };
+
+  const primaryMedia = mediaList[activeIdx] || mediaList[0];
   const focalStyles = primaryMedia.focalPoint
     ? `${primaryMedia.focalPoint.x}% ${primaryMedia.focalPoint.y}%`
     : "center";
 
+  // Animation variants for smooth cross-sliding/fading media transition
+  const slideVariants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? "100%" : "-100%",
+      opacity: 0,
+      scale: 1.03
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      transition: {
+        x: { type: "spring" as const, stiffness: 300, damping: 32 },
+        opacity: { duration: 0.4 },
+        scale: { duration: 0.6 }
+      }
+    },
+    exit: (dir: number) => ({
+      x: dir > 0 ? "-100%" : "100%",
+      opacity: 0,
+      scale: 0.97,
+      transition: {
+        x: { type: "spring" as const, stiffness: 300, damping: 32 },
+        opacity: { duration: 0.3 }
+      }
+    })
+  };
+
   return (
     <div className="relative h-screen w-full flex items-center justify-center border-b border-white/5 bg-luxury-black overflow-hidden py-12 md:py-0 select-none">
 
-      {/* Full-bleed background media cover (unblurred at 55% opacity to blend into the luxury black backdrop) */}
+      {/* Full-bleed background media cover */}
       <div 
-        onClick={() => onOpenLightbox(0)}
+        onClick={() => onOpenLightbox(activeIdx)}
         className="absolute inset-0 z-0 w-full h-full select-none overflow-hidden cursor-zoom-in"
       >
-        {primaryMedia.type === "image" ? (
-          <img
-            src={getImageUrl(primaryMedia.url)}
-            alt="Background Cover"
-            style={{ objectPosition: focalStyles }}
-            className="w-full h-full object-cover opacity-55 transition-transform duration-10000 ease-out scale-100"
-          />
-        ) : (
-          <video
-            src={primaryMedia.url}
-            style={{ objectPosition: focalStyles }}
-            className="w-full h-full object-cover opacity-55"
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
-        )}
+        <AnimatePresence initial={false} custom={direction} mode="wait">
+          <motion.div
+            key={activeIdx}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.55 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2 }}
+            className="absolute inset-0 w-full h-full"
+          >
+            {primaryMedia.type === "image" ? (
+              <img
+                src={getImageUrl(primaryMedia.url)}
+                alt="Background Cover"
+                style={{ objectPosition: focalStyles }}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <video
+                src={primaryMedia.url}
+                style={{ objectPosition: focalStyles }}
+                className="w-full h-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
         {/* Soft layout shading gradients for cinematic bleed */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-black pointer-events-none" />
       </div>
@@ -252,9 +338,19 @@ function ProductCampaign({
             {item.subtitle}
           </p>
 
-          <span className="text-[9px] tracking-[0.2em] uppercase font-sans text-zinc-500 font-semibold select-none pt-2">
-            Click frame to expand
-          </span>
+          <div className="flex items-center space-x-3 pt-2">
+            <button
+              onClick={() => onOpenLightbox(activeIdx)}
+              className="text-[9px] tracking-[0.2em] uppercase font-sans text-luxury-gold hover:text-white transition-colors duration-300 font-semibold select-none border border-luxury-gold/30 hover:border-luxury-gold px-4 py-2 rounded-full bg-black/40 backdrop-blur-md"
+            >
+              Expand View ✦
+            </button>
+            {mediaCount > 1 && (
+              <span className="text-[9px] tracking-[0.2em] uppercase font-sans text-zinc-500 font-semibold select-none">
+                Swipe or drag to explore ({activeIdx + 1}/{mediaCount})
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Cinematic Framed Photo Box Column */}
@@ -262,42 +358,116 @@ function ProductCampaign({
 
           {/* Outer double-border frame with luxury gold glow drop shadow */}
           <div
-            onClick={() => onOpenLightbox(0)}
-            className={`cursor-zoom-in relative p-1.5 bg-[#09090b]/85 border border-white/20 rounded-sm shadow-[0_0_30px_rgba(197,168,128,0.25)] hover:shadow-[0_0_45px_rgba(197,168,128,0.4)] transition-all duration-700 hover:scale-[1.01] pointer-events-auto ${isLandscape
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            className={`group relative p-1.5 bg-[#09090b]/85 border border-white/20 rounded-sm shadow-[0_0_30px_rgba(197,168,128,0.25)] hover:shadow-[0_0_45px_rgba(197,168,128,0.4)] transition-all duration-700 pointer-events-auto ${isLandscape
               ? "w-full max-w-[480px] sm:max-w-[560px] aspect-[16/10]"
               : "w-[260px] sm:w-[320px] md:w-[360px] aspect-[3/4]"
               }`}
           >
-            {/* Inner keyline border */}
-            <div className="w-full h-full border border-white/10 rounded-sm overflow-hidden relative">
-              {primaryMedia.type === "image" ? (
-                <img
-                  src={getImageUrl(primaryMedia.url)}
-                  alt={item.title}
-                  style={{ objectPosition: focalStyles }}
-                  className="w-full h-full object-cover transition-transform duration-[12s] ease-out hover:scale-104"
-                />
-              ) : (
-                <video
-                  src={primaryMedia.url}
-                  style={{ objectPosition: focalStyles }}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                />
+            {/* Inner keyline border & Draggable media viewport */}
+            <div className="w-full h-full border border-white/10 rounded-sm overflow-hidden relative touch-pan-y">
+              
+              {/* Draggable Media Carousel */}
+              <motion.div
+                drag={mediaCount > 1 ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.2}
+                onDragEnd={handleDragEnd}
+                className="w-full h-full cursor-grab active:cursor-grabbing relative"
+                onClick={() => onOpenLightbox(activeIdx)}
+              >
+                <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                  <motion.div
+                    key={activeIdx}
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className="absolute inset-0 w-full h-full"
+                  >
+                    {primaryMedia.type === "image" ? (
+                      <img
+                        src={getImageUrl(primaryMedia.url)}
+                        alt={item.title}
+                        style={{ objectPosition: focalStyles }}
+                        className="w-full h-full object-cover pointer-events-none select-none"
+                      />
+                    ) : (
+                      <video
+                        src={primaryMedia.url}
+                        style={{ objectPosition: focalStyles }}
+                        className="w-full h-full object-cover pointer-events-none"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Soft vignette overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none z-10" />
+
+                {/* Play symbol indicator overlay for video cards */}
+                {primaryMedia.type === "video" && (
+                  <div className="absolute top-3 left-3 p-1.5 bg-black/60 border border-white/10 rounded-full text-white/90 z-20 backdrop-blur-md">
+                    <Play size={10} className="fill-current" />
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Minimal Luxury Multi-Media Indication (Ultra-sleek segmented dashes & counter at bottom) */}
+              {mediaCount > 1 && (
+                <>
+                  {/* Bottom Edge Segmented Progress Bar */}
+                  <div className="absolute bottom-3 inset-x-14 z-20 flex items-center justify-center space-x-1.5 pointer-events-none">
+                    {mediaList.map((_, mIdx) => (
+                      <div
+                        key={mIdx}
+                        className={`h-0.5 rounded-full transition-all duration-500 ${
+                          mIdx === activeIdx
+                            ? "w-6 bg-luxury-gold shadow-[0_0_8px_rgba(197,168,128,0.8)]"
+                            : "w-2 bg-white/20"
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Bottom-Right Glass Counter Pill */}
+                  <div className="absolute bottom-3 right-3 z-20 pointer-events-none">
+                    <span className="text-[9px] tracking-[0.2em] font-sans font-light text-white/90 bg-black/65 backdrop-blur-md px-2 py-0.5 border border-white/15 rounded-full shadow-lg">
+                      0{activeIdx + 1} / 0{mediaCount}
+                    </span>
+                  </div>
+
+                  {/* Elegant Subtle Arrow Navigation Controls (Appear on Hover) */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePrev();
+                    }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-black/40 border border-white/10 text-white/80 hover:text-white hover:bg-black/70 hover:scale-110 transition-all duration-300 opacity-0 group-hover:opacity-100 backdrop-blur-md"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNext();
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-black/40 border border-white/10 text-white/80 hover:text-white hover:bg-black/70 hover:scale-110 transition-all duration-300 opacity-0 group-hover:opacity-100 backdrop-blur-md"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </>
               )}
 
-              {/* Soft vignette overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-
-              {/* Play symbol indicator overlay for video cards */}
-              {primaryMedia.type === "video" && (
-                <div className="absolute bottom-4 right-4 p-2 bg-black/60 border border-white/10 rounded-full text-white/90">
-                  <Play size={12} className="fill-current" />
-                </div>
-              )}
             </div>
           </div>
 
