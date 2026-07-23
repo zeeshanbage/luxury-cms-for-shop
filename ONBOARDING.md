@@ -93,12 +93,12 @@ In the **Environment Variables** section of the Vercel project configuration, ad
 #### For the Seema Sarees Project (`seemasareecenter.vercel.app`):
 - `VITE_ACTIVE_CLIENT` = `seemasarees`
 - `VITE_SUPABASE_URL` = `https://gfxskzrmfncolffwefge.supabase.co`
-- `VITE_SUPABASE_ANON_KEY` = `sb_publishable_8ffEFsG3G0QQhj_qSqka1Q_YC1p8nyB`
+- `VITE_SUPABASE_ANON_KEY` = `key`
 
 #### For the Fashion King Project:
 - `VITE_ACTIVE_CLIENT` = `fashionking`
 - `VITE_SUPABASE_URL` = `https://jfwycmxmijssvoubedfv.supabase.co`
-- `VITE_SUPABASE_ANON_KEY` = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmd3ljbXhtaWpzc3ZvdWJlZGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjIwNDYsImV4cCI6MjA5OTY5ODA0Nn0.gIke4GJwCWYLqgKNOCMfGFh6_GiUWqlgI28dv9UoOB8`
+- `VITE_SUPABASE_ANON_KEY` = `key`
 
 ### Step 3: Configure Build Command & Output
 - **Framework Preset**: Vite
