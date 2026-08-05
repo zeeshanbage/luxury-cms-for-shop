@@ -2,10 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2, Edit, X, GripVertical, Sparkles, Settings } from "lucide-react";
+import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2, Edit, X, GripVertical, Sparkles, Settings, BarChart3, Users, Smartphone, Laptop, MousePointer, RefreshCw } from "lucide-react";
 
 import type { Product } from "@/types/db";
-import { getProducts, createProduct, deleteProduct, updateProduct, uploadProductMedia, updateProductsOrder, createCollection, updateCollection, deleteCollection, updateCollectionsOrder, updateSettings } from "@/services/db";
+import { getProducts, createProduct, deleteProduct, updateProduct, uploadProductMedia, updateProductsOrder, createCollection, updateCollection, deleteCollection, updateCollectionsOrder, updateSettings, getAnalyticsEvents, clearAnalyticsEvents } from "@/services/db";
 import { useSettings, useCollections } from "@/hooks/useDbQueries";
 import { siteConfig } from "@/config/site";
 import { collectionsConfig } from "@/config/collections";
@@ -725,6 +725,289 @@ function SettingsManagerModal({
   );
 }
 
+// ─── Analytics / Insights Dashboard Modal ──────────────────────────────────────
+interface AnalyticsDashboardModalProps {
+  onClose: () => void;
+}
+
+function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEvents = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getAnalyticsEvents();
+      setEvents(data);
+    } catch (err: any) {
+      setError(err.message || "Failed to load visitor insights.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const handleClear = async () => {
+    if (!confirm("Are you sure you want to clear all analytics history? This cannot be undone.")) return;
+    try {
+      await clearAnalyticsEvents();
+      setEvents([]);
+    } catch (err: any) {
+      alert("Failed to clear data: " + err.message);
+    }
+  };
+
+  // Compute insights metrics
+  const totalVisits = events.filter(e => e.event_type === "page_visit").length;
+  
+  // Unique visitors count
+  const uniqueSessions = new Set(events.map(e => e.user_session_id)).size;
+  
+  // Product details expanded
+  const totalProductExpands = events.filter(e => e.event_type === "product_click").length;
+  
+  // Lead action buttons clicked
+  const totalLeads = events.filter(e => e.event_type === "lead_click").length;
+
+  // 1. Device Breakdown
+  const desktopCount = events.filter(e => e.device_type === "desktop").length;
+  const mobileCount = events.filter(e => e.device_type === "mobile").length;
+  const totalDeviceRecord = desktopCount + mobileCount || 1;
+  const desktopPercent = Math.round((desktopCount / totalDeviceRecord) * 100);
+  const mobilePercent = Math.round((mobileCount / totalDeviceRecord) * 100);
+
+  // 2. Category Views Distribution
+  const categoryViews: Record<string, number> = {};
+  events.filter(e => e.event_type === "category_view").forEach(e => {
+    categoryViews[e.event_name] = (categoryViews[e.event_name] || 0) + 1;
+  });
+  const maxCategoryViews = Math.max(...Object.values(categoryViews), 1);
+
+  // 3. Top Products Expanded
+  const productViews: Record<string, number> = {};
+  events.filter(e => e.event_type === "product_click").forEach(e => {
+    // Event name is stored as "productId::productTitle"
+    const title = e.event_name.split("::")[1] || e.event_name;
+    productViews[title] = (productViews[title] || 0) + 1;
+  });
+  const topProductsSorted = Object.entries(productViews)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  // 4. Leads Channel clicks breakdown
+  const leadChannels: Record<string, number> = {};
+  events.filter(e => e.event_type === "lead_click").forEach(e => {
+    leadChannels[e.event_name] = (leadChannels[e.event_name] || 0) + 1;
+  });
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 select-text">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        className="w-full max-w-4xl bg-luxury-black border border-luxury-gold/30 p-6 sm:p-8 rounded-sm shadow-[0_0_80px_rgba(197,168,128,0.25)] space-y-6 flex flex-col h-[90vh]"
+      >
+        {/* Modal Header */}
+        <div className="flex items-center justify-between border-b border-luxury-gold/10 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-luxury-gold/10 border border-luxury-gold/25 flex items-center justify-center">
+              <BarChart3 className="text-luxury-gold" size={16} />
+            </div>
+            <div>
+              <h3 className="text-sm font-serif uppercase tracking-widest text-white">
+                Showroom Visitor Insights
+              </h3>
+              <p className="text-[9px] tracking-wider text-zinc-500 uppercase mt-0.5">
+                Real-time lead conversion & style engagement trends
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={fetchEvents}
+              title="Refresh logs"
+              disabled={loading}
+              className="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+            >
+              <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+            </button>
+            <button
+              onClick={handleClear}
+              title="Clear data history"
+              className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/5 rounded-full transition-all"
+            >
+              <Trash2 size={15} />
+            </button>
+            <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 ml-1">
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+
+        {error && (
+          <div className="p-3 bg-red-500/10 border border-red-500/25 text-red-400 text-xs rounded-sm tracking-wide">
+            ⚠ {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex-1 flex flex-col items-center justify-center space-y-3">
+            <div className="w-8 h-8 border-2 border-luxury-gold border-t-transparent rounded-full animate-spin" />
+            <span className="text-[10px] tracking-[0.2em] uppercase text-zinc-500">Loading Insights...</span>
+          </div>
+        ) : events.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
+            <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+              <Users size={20} className="text-zinc-650" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-xs uppercase tracking-widest text-zinc-400 font-serif">No Visitor Logs Yet</h4>
+              <p className="text-[10px] text-zinc-600 max-w-xs leading-relaxed">
+                As soon as users browse the showroom, open items, or click to consult, stats will display here.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto space-y-6 pr-1 pb-4">
+            {/* Row 1: High-Level Analytics Metrics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-[#030303] border border-white/5 p-4 rounded-sm space-y-2">
+                <span className="text-[9px] uppercase tracking-widest text-zinc-500 block">Total Page Views</span>
+                <p className="text-2xl font-serif text-white font-light">{totalVisits}</p>
+              </div>
+              <div className="bg-[#030303] border border-white/5 p-4 rounded-sm space-y-2">
+                <span className="text-[9px] uppercase tracking-widest text-zinc-500 block">Unique Visitors</span>
+                <p className="text-2xl font-serif text-white font-light">{uniqueSessions}</p>
+              </div>
+              <div className="bg-[#030303] border border-white/5 p-4 rounded-sm space-y-2">
+                <span className="text-[9px] uppercase tracking-widest text-zinc-500 block">Lookbook Expands</span>
+                <p className="text-2xl font-serif text-white font-light">{totalProductExpands}</p>
+              </div>
+              <div className="bg-[#030303] border border-white/5 p-4 rounded-sm space-y-2">
+                <span className="text-[9px] uppercase tracking-widest text-zinc-500 block">Contact Actions</span>
+                <p className="text-2xl font-serif text-luxury-gold font-light">{totalLeads}</p>
+              </div>
+            </div>
+
+            {/* Row 2: Category Interest & Device Split */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              {/* Category Style Trends Chart */}
+              <div className="md:col-span-8 bg-[#030303] border border-white/5 p-5 rounded-sm space-y-4">
+                <h4 className="text-xs uppercase tracking-widest text-white font-serif border-b border-white/5 pb-2">
+                  Category Interest Split (Style trends)
+                </h4>
+                <div className="space-y-4 pt-1">
+                  {Object.entries(categoryViews).map(([cat, count]) => {
+                    const percent = Math.round((count / maxCategoryViews) * 100);
+                    return (
+                      <div key={cat} className="space-y-1">
+                        <div className="flex justify-between text-[10px] tracking-wider uppercase">
+                          <span className="text-zinc-300">{cat}</span>
+                          <span className="text-luxury-gold font-semibold">{count} views</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div
+                            style={{ width: `${percent}%` }}
+                            className="h-full bg-gradient-to-r from-luxury-gold/50 to-luxury-gold rounded-full"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {Object.keys(categoryViews).length === 0 && (
+                    <p className="text-[10px] text-zinc-600 italic">No category switch actions logged yet.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Device Split Chart */}
+              <div className="md:col-span-4 bg-[#030303] border border-white/5 p-5 rounded-sm flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xs uppercase tracking-widest text-white font-serif border-b border-white/5 pb-2 mb-4">
+                    Device Split
+                  </h4>
+                  <div className="flex justify-around items-center pt-2">
+                    <div className="flex flex-col items-center gap-1">
+                      <Laptop size={20} className={desktopPercent > mobilePercent ? "text-luxury-gold" : "text-zinc-600"} />
+                      <span className="text-[9px] uppercase tracking-widest text-zinc-500">Desktop</span>
+                      <span className="text-sm font-serif text-white">{desktopPercent}%</span>
+                    </div>
+                    <div className="w-[1px] h-8 bg-white/5" />
+                    <div className="flex flex-col items-center gap-1">
+                      <Smartphone size={20} className={mobilePercent > desktopPercent ? "text-luxury-gold" : "text-zinc-600"} />
+                      <span className="text-[9px] uppercase tracking-widest text-zinc-500">Mobile</span>
+                      <span className="text-sm font-serif text-white">{mobilePercent}%</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden mt-4 flex">
+                  <div style={{ width: `${desktopPercent}%` }} className="bg-luxury-gold/70 h-full" />
+                  <div style={{ width: `${mobilePercent}%` }} className="bg-zinc-650 h-full" />
+                </div>
+              </div>
+            </div>
+
+            {/* Row 3: Top Products & Lead Action Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              {/* Top Performing Lookbook Cards */}
+              <div className="md:col-span-7 bg-[#030303] border border-white/5 p-5 rounded-sm space-y-4">
+                <h4 className="text-xs uppercase tracking-widest text-white font-serif border-b border-white/5 pb-2">
+                  Top Performing Lookbook Items
+                </h4>
+                <div className="space-y-3">
+                  {topProductsSorted.map(([title, count], idx) => (
+                    <div key={title} className="flex items-center justify-between text-xs border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-mono text-zinc-600">0{idx + 1}</span>
+                        <span className="text-zinc-300 font-light truncate max-w-[200px] sm:max-w-xs">{title}</span>
+                      </div>
+                      <span className="text-[10px] uppercase font-mono tracking-widest bg-luxury-gold/10 text-luxury-gold px-2 py-0.5 rounded-sm">
+                        {count} clicks
+                      </span>
+                    </div>
+                  ))}
+                  {topProductsSorted.length === 0 && (
+                    <p className="text-[10px] text-zinc-600 italic">No lookbook cards opened yet.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Lead Capture channels */}
+              <div className="md:col-span-5 bg-[#030303] border border-white/5 p-5 rounded-sm space-y-4">
+                <h4 className="text-xs uppercase tracking-widest text-white font-serif border-b border-white/5 pb-2">
+                  Lead Click Channels
+                </h4>
+                <div className="space-y-3">
+                  {Object.entries(leadChannels).map(([channel, count]) => {
+                    const label = channel.replace(/_/g, " ").replace("click", "");
+                    return (
+                      <div key={channel} className="flex items-center justify-between text-[11px]">
+                        <span className="text-zinc-400 font-light capitalize">{label}</span>
+                        <span className="text-white font-medium flex items-center gap-1.5">
+                          <MousePointer size={11} className="text-luxury-gold" /> {count} clicks
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {Object.keys(leadChannels).length === 0 && (
+                    <p className="text-[10px] text-zinc-600 italic">No contact actions clicked yet.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
 interface QueuedMedia {
   id: string;
   file: File;
@@ -1336,6 +1619,7 @@ export default function AdminPanel() {
   const [needsPasswordSet, setNeedsPasswordSet] = useState(false);
   const [showCollectionsManager, setShowCollectionsManager] = useState(false);
   const [showSettingsManager, setShowSettingsManager] = useState(false);
+  const [showAnalyticsDashboard, setShowAnalyticsDashboard] = useState(false);
   const [activeCategory, setActiveCategory] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -1579,6 +1863,13 @@ export default function AdminPanel() {
           >
             <Edit size={12} /> Update Contact Info
           </button>
+
+          <button
+            onClick={() => setShowAnalyticsDashboard(true)}
+            className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] tracking-[0.25em] uppercase font-sans font-semibold rounded-full bg-white/5 border border-luxury-gold/20 text-luxury-gold hover:bg-luxury-gold/5 transition-all"
+          >
+            <BarChart3 size={12} /> View Insights
+          </button>
         </div>
 
         {/* Add button row */}
@@ -1720,6 +2011,14 @@ export default function AdminPanel() {
             onRefresh={() => {
               queryClient.invalidateQueries({ queryKey: ["settings"] });
             }}
+          />
+        )}
+      </AnimatePresence>
+      {/* Analytics Insights Dashboard Modal Overlay */}
+      <AnimatePresence>
+        {showAnalyticsDashboard && (
+          <AnalyticsDashboardModal
+            onClose={() => setShowAnalyticsDashboard(false)}
           />
         )}
       </AnimatePresence>

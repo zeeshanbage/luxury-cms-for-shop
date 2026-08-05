@@ -11,6 +11,7 @@ import {
 import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight, Maximize, Minimize } from "lucide-react";
 import { getImageUrl } from "@/utils/image";
 import { useSettings, useProducts, useCollections } from "@/hooks/useDbQueries";
+import { analyticsService } from "@/services/analytics";
 import { siteConfig } from "@/config/site";
 import { imageConfig } from "@/config/images";
 import type { Product } from "@/types/db";
@@ -535,6 +536,18 @@ export default function Home() {
     }
   }, [collections, activeCategory]);
 
+  // Track page visit on mount
+  useEffect(() => {
+    analyticsService.trackPageVisit("Home");
+  }, []);
+
+  // Track category selection switches
+  useEffect(() => {
+    if (activeCategory) {
+      analyticsService.trackCategoryView(activeCategory);
+    }
+  }, [activeCategory]);
+
   // Lightbox view state manager
   const [lightboxActiveProduct, setLightboxActiveProduct] = useState<Product | null>(null);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
@@ -682,7 +695,10 @@ export default function Home() {
             className="pt-2"
           >
             <button
-              onClick={scrollToCampaignGallery}
+              onClick={() => {
+                analyticsService.trackLeadClick("explore_lookbook_hero");
+                scrollToCampaignGallery();
+              }}
               className="group/btn inline-flex items-center space-x-3 px-8 py-4 bg-white hover:bg-luxury-gold text-black text-xs tracking-widest uppercase font-semibold font-sans rounded-sm transition-all duration-300 shadow-luxury-glow"
             >
               <span>Explore Lookbook</span>
@@ -768,6 +784,7 @@ export default function Home() {
                   item={item}
                   index={index}
                   onOpenLightbox={(initialMediaIdx) => {
+                    analyticsService.trackProductClick(item.id, item.title);
                     setLightboxActiveProduct(item);
                     setLightboxInitialIndex(initialMediaIdx);
                   }}

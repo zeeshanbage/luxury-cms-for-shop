@@ -666,4 +666,41 @@ export async function updateCollectionsOrder(orderedIds: string[]): Promise<void
   if (error) throw error;
 }
 
+export async function getAnalyticsEvents(): Promise<any[]> {
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("analytics_events")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    } else {
+      const raw = localStorage.getItem("fashionking_analytics_events");
+      return raw ? JSON.parse(raw) : [];
+    }
+  } catch (err) {
+    console.warn("Failed fetching analytics events:", err);
+    const raw = localStorage.getItem("fashionking_analytics_events");
+    return raw ? JSON.parse(raw) : [];
+  }
+}
+
+export async function clearAnalyticsEvents(): Promise<void> {
+  try {
+    if (supabase) {
+      const { error } = await supabase
+        .from("analytics_events")
+        .delete()
+        .neq("id", -1);
+      if (error) throw error;
+    } else {
+      localStorage.removeItem("fashionking_analytics_events");
+    }
+  } catch (err) {
+    console.warn("Failed clearing analytics events:", err);
+    localStorage.removeItem("fashionking_analytics_events");
+  }
+}
+
 

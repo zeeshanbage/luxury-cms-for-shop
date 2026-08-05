@@ -280,3 +280,26 @@ BEGIN
 END
 $$;
 
+-- 9. ANALYTICS EVENTS TABLE
+CREATE TABLE IF NOT EXISTS analytics_events (
+    id SERIAL PRIMARY KEY,
+    event_type VARCHAR(100) NOT NULL, -- 'page_visit', 'category_view', 'product_click', 'lead_click'
+    event_name VARCHAR(100) NOT NULL, -- e.g. 'suits', 'Signature Bespoke Suit', 'whatsapp_click', 'maps_click'
+    user_session_id VARCHAR(100),     -- Anonymous session id to count unique visitors
+    device_type VARCHAR(50),          -- 'mobile', 'desktop'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'analytics_events' AND policyname = 'Allow public insert') THEN
+        CREATE POLICY "Allow public insert" ON analytics_events FOR INSERT TO public WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'analytics_events' AND policyname = 'Allow public select') THEN
+        CREATE POLICY "Allow public select" ON analytics_events FOR SELECT TO public USING (true);
+    END IF;
+END
+$$;
+
