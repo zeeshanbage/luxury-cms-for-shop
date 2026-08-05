@@ -8,7 +8,7 @@ import {
   useSpring,
   useInView
 } from "framer-motion";
-import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight, Maximize, Minimize } from "lucide-react";
 import { getImageUrl } from "@/utils/image";
 import { useSettings, useProducts, useCollections } from "@/hooks/useDbQueries";
 import { siteConfig } from "@/config/site";
@@ -26,6 +26,7 @@ function FullscreenLightbox({
   onClose: () => void;
 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isCropped, setIsCropped] = useState(true);
   const mediaCount = item.media.length;
 
   const handleNext = () => {
@@ -74,12 +75,23 @@ function FullscreenLightbox({
             Media {currentIndex + 1} of {mediaCount}
           </span>
         </div>
-        <button
-          onClick={onClose}
-          className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors pointer-events-auto"
-        >
-          <X size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          {activeMedia.type === "video" && (
+            <button
+              onClick={() => setIsCropped((prev) => !prev)}
+              className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors pointer-events-auto flex items-center justify-center"
+              title={isCropped ? "View Full Frame (Fit Screen)" : "Crop & Fill Screen"}
+            >
+              {isCropped ? <Minimize size={18} className="text-luxury-gold" /> : <Maximize size={18} className="text-luxury-gold" />}
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors pointer-events-auto"
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
 
       {/* Left Desktop Arrow */}
@@ -125,7 +137,7 @@ function FullscreenLightbox({
               <video
                 key={activeMedia.url}
                 src={activeMedia.url}
-                className="w-full h-full object-cover"
+                className={`w-full h-full transition-all duration-300 ${isCropped ? "object-cover" : "object-contain"}`}
                 autoPlay
                 muted
                 playsInline
