@@ -90,6 +90,17 @@ function FullscreenLightbox({
         <ChevronLeft size={20} />
       </button>
 
+      {/* Preload lookbook media in the background */}
+      <div className="hidden" aria-hidden="true">
+        {item.media.map((med, idx) => (
+          med.type === "image" ? (
+            <img key={idx} src={getImageUrl(med.url)} alt="preload" />
+          ) : (
+            <video key={idx} src={med.url} preload="auto" muted />
+          )
+        ))}
+      </div>
+
       {/* Main Media Slide Container — fills entire lightbox */}
       <div className="absolute inset-0 z-40">
         <AnimatePresence mode="wait">
@@ -283,7 +294,25 @@ function ProductCampaign({
   };
 
   return (
-    <div ref={containerRef} className="relative h-screen w-full flex items-center justify-center border-b border-white/5 bg-luxury-black overflow-hidden py-12 md:py-0 select-none">
+    <div ref={containerRef} className="relative h-screen w-full flex items-center justify-center bg-luxury-black overflow-hidden py-12 md:py-0 select-none">
+
+      {/* Premium Custom Gold Accent Divider between sections */}
+      {index > 0 && (
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-luxury-gold/25 to-transparent flex items-center justify-center z-30">
+          <div className="w-1.5 h-1.5 rotate-45 bg-luxury-gold/60 border border-black" />
+        </div>
+      )}
+
+      {/* Preload campaign slideshow media in the background */}
+      <div className="hidden" aria-hidden="true">
+        {mediaList.map((med, idx) => (
+          med.type === "image" ? (
+            <img key={idx} src={getImageUrl(med.url)} alt="preload" />
+          ) : (
+            <video key={idx} src={med.url} preload="auto" muted />
+          )
+        ))}
+      </div>
 
       {/* Full-bleed background media cover */}
       <div 
@@ -294,7 +323,7 @@ function ProductCampaign({
           <motion.div
             key={activeIdx}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.55 }}
+            animate={{ opacity: 0.8 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2 }}
             className="absolute inset-0 w-full h-full"
@@ -320,7 +349,7 @@ function ProductCampaign({
           </motion.div>
         </AnimatePresence>
         {/* Soft layout shading gradients for cinematic bleed */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-black pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/75 pointer-events-none" />
       </div>
 
       {/* Grid container layout */}
@@ -581,7 +610,7 @@ export default function Home() {
 
         {/* Ambient Glowing cursor spotlight */}
         <motion.div
-          className="absolute pointer-events-none rounded-full bg-radial from-luxury-gold/5 via-transparent to-transparent blur-3xl w-[600px] h-[600px]"
+          className="absolute pointer-events-none rounded-full bg-radial from-luxury-gold/15 via-transparent to-transparent blur-3xl w-[600px] h-[600px]"
           style={{
             x: springX,
             y: springY,
@@ -593,65 +622,52 @@ export default function Home() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:5rem_5rem]" />
       </div>
 
-      {/* SECTION 1: Dynamic Signboard Hero (Responsive stacked/split layout) */}
-      <div className="relative w-full flex flex-col md:flex-row md:h-screen items-stretch justify-start overflow-hidden border-b border-white/5 bg-black">
+      {/* SECTION 1: Dynamic Signboard Hero (Full width layout with centered text overlay) */}
+      <div className="relative w-full h-[65vh] md:h-screen flex items-center justify-center overflow-hidden border-b border-white/5 bg-black">
         
-        {/* Left Column: copy overlay */}
-        <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left space-y-6 max-w-2xl select-none w-full md:w-[50%] px-6 py-12 md:py-0 md:pl-16 lg:pl-24 justify-center order-2 md:order-1 bg-black md:bg-transparent">
+        {/* Full-width Signboard Backdrop image */}
+        <div className="absolute inset-0 z-0 select-none overflow-hidden pointer-events-none w-full h-full">
+          <motion.img
+            src={getImageUrl(imageConfig.heroImages?.storefront || "/images/signboard.png")}
+            alt={`${settings?.site_name || siteConfig.name} Storefront`}
+            style={{ y: heroImageParallax, scale: heroImageScale, transformOrigin: "top" }}
+            className="w-full h-full object-cover object-top filter brightness-[1.08] contrast-[1.03] saturate-[1.02]"
+          />
+          {/* Very light dark overlay to guarantee text legibility while keeping the signboard fully visible */}
+          <div className="absolute inset-0 bg-black/15 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black via-black/5 to-transparent pointer-events-none" />
+        </div>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center gap-3 px-4 py-1.5 bg-black/60 border border-luxury-gold/30 rounded-full text-[10px] sm:text-xs font-sans tracking-[0.25em] text-luxury-gold uppercase font-semibold backdrop-blur-md"
-          >
-            <Sparkles size={12} className="animate-pulse" />
-            <span>Official Digital Showroom</span>
-          </motion.div>
-
-          <div className="overflow-hidden py-1">
-            <motion.h1
-              initial={{ y: "100%", opacity: 0 }}
+        {/* Bottom overlay container for text content & explore button (75% down, copiable text) */}
+        <div className="absolute bottom-[8vh] md:bottom-[10vh] z-10 flex flex-col items-center text-center space-y-6 max-w-2xl w-full px-6 justify-center pointer-events-auto">
+          
+          <div className="space-y-3">
+            <motion.p
+              initial={{ y: 15, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="text-[2.2rem] sm:text-6xl md:text-5xl lg:text-7xl xl:text-8xl font-bold md:font-light tracking-wide font-serif text-white leading-none uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]"
-            >
-              {settings?.site_name || siteConfig.name}
-            </motion.h1>
-          </div>
-
-          <div className="overflow-hidden">
-            <motion.p
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-lg sm:text-2xl tracking-[0.3em] font-serif text-luxury-gold font-semibold md:font-light italic drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+              className="text-base sm:text-xl md:text-2xl tracking-wider font-sans text-white font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] select-text selection:bg-luxury-gold selection:text-black"
             >
               {settings?.site_sub_name || siteConfig.subName}
+            </motion.p>
+
+            <motion.p
+              initial={{ y: 15, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              className="text-[10px] sm:text-xs tracking-[0.2em] text-zinc-300 uppercase font-sans font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] select-text selection:bg-luxury-gold selection:text-black"
+            >
+              {settings?.address 
+                ? settings.address 
+                : (siteConfig as any).address || "Beed, Maharashtra"}
             </motion.p>
           </div>
 
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.3 }}
-            className="flex flex-col items-center md:items-start space-y-3 pt-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
-          >
-            <p className="text-zinc-100 md:text-zinc-300 font-medium md:font-light text-xs sm:text-sm tracking-wider leading-relaxed max-w-lg">
-              {settings?.site_tagline || siteConfig.tagline}
-            </p>
-            <span className="text-[10px] tracking-[0.15em] text-zinc-300 md:text-zinc-500 uppercase font-sans font-semibold">
-              {settings?.address 
-                ? settings.address 
-                : (siteConfig as any).address || "Beed, Maharashtra"}
-            </span>
-          </motion.div>
-
-          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="pt-4"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="pt-2"
           >
             <button
               onClick={scrollToCampaignGallery}
@@ -662,19 +678,6 @@ export default function Home() {
             </button>
           </motion.div>
 
-        </div>
-
-        {/* Storefront backdrop image (Responsive layout: stacked on mobile, absolute/widescreen on desktop) */}
-        <div className="relative w-full md:absolute md:inset-y-0 md:right-0 md:w-[65%] h-[45vh] md:h-full z-10 md:z-0 order-1 md:order-2 select-none overflow-hidden pointer-events-none flex-shrink-0">
-          <motion.img
-            src={getImageUrl(imageConfig.heroImages?.storefront || "/images/signboard.png")}
-            alt={`${settings?.site_name || siteConfig.name} Storefront`}
-            style={{ y: heroImageParallax, scale: heroImageScale, transformOrigin: "top" }}
-            className="w-full h-full object-cover object-center md:object-right filter brightness-[0.9] contrast-[1.03] saturate-[0.95]"
-          />
-          {/* Smooth black gradient overlay to blend into the surrounding black panels */}
-          <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black via-black/20 to-transparent pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black to-transparent pointer-events-none" />
         </div>
       </div>
 

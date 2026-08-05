@@ -156,15 +156,27 @@ export default function Contact() {
             </motion.div>
 
             {/* Interactive Map Embed */}
-            <motion.div variants={itemVariants} className="lg:col-span-7 w-full h-full min-h-[380px] lg:min-h-[460px]">
-              <div className="glass-card p-2 rounded-sm overflow-hidden w-full h-full shadow-[0_0_30px_rgba(197,168,128,0.15)] border border-white/10 relative">
-                <iframe
-                  title={`${settings?.site_name || "Showroom"} Location Map`}
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=&z=17&ie=UTF8&iwloc=&output=embed`}
-                  className="w-full h-[380px] lg:h-[480px] border-0 rounded-sm filter invert-[0.9] hue-rotate-[180deg] brightness-[0.9] contrast-[1.2]"
-                  allowFullScreen
-                  loading="lazy"
-                />
+            <motion.div variants={itemVariants} className="lg:col-span-7 w-full h-full min-h-[380px] lg:min-h-[460px] group/map">
+              <div className="glass-card p-2 rounded-sm overflow-hidden w-full h-full shadow-[0_0_30px_rgba(197,168,128,0.12)] hover:shadow-[0_0_50px_rgba(197,168,128,0.28)] transition-all duration-700 border border-white/10 hover:border-luxury-gold/30 relative flex flex-col justify-between">
+                <div className="relative w-full h-[380px] lg:h-[480px] overflow-hidden rounded-sm">
+                  <iframe
+                    title={`${settings?.site_name || "Showroom"} Location Map`}
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=&z=17&ie=UTF8&iwloc=&output=embed`}
+                    className="w-full h-full border-0 filter invert-[0.9] hue-rotate-[180deg] brightness-[0.88] contrast-[1.2] transition-all duration-700 group-hover/map:brightness-[0.93]"
+                    allowFullScreen
+                    loading="lazy"
+                  />
+                  {/* Floating Action Button to Open Google Maps directly */}
+                  <a
+                    href={mapsLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute bottom-4 right-4 z-10 px-4 py-2.5 bg-[#030303]/90 border border-luxury-gold/40 text-luxury-gold hover:bg-luxury-gold hover:text-black hover:border-luxury-gold text-[9px] tracking-widest font-sans font-semibold uppercase rounded-sm transition-all duration-300 shadow-2xl flex items-center gap-2"
+                  >
+                    <Compass size={11} className="animate-pulse" />
+                    <span>Get Directions</span>
+                  </a>
+                </div>
               </div>
             </motion.div>
           </div>

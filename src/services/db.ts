@@ -17,13 +17,46 @@ export async function getSettings(): Promise<DbSettings> {
       .order("id", { ascending: true })
       .limit(1)
       .maybeSingle();
-
+ 
     if (error) throw error;
     if (!data) throw new Error("No settings record found in database");
     
     return data as DbSettings;
   } catch (err) {
     console.warn("[DB Service] getSettings failed. Falling back to local configuration files.", err);
+    try {
+      const mock = localStorage.getItem("fashionking_mock_settings");
+      if (mock) {
+        const parsed = JSON.parse(mock);
+        return {
+          site_name: parsed.site_name || siteConfig.name,
+          site_sub_name: parsed.site_sub_name || siteConfig.subName,
+          site_tagline: parsed.site_tagline || siteConfig.tagline,
+          site_description: parsed.site_description || siteConfig.description,
+          seo_title: parsed.seo_title || siteConfig.seoTitle,
+          seo_description: parsed.seo_description || siteConfig.seoDescription,
+          og_title: parsed.og_title || siteConfig.ogTitle,
+          og_description: parsed.og_description || siteConfig.ogDescription,
+          founded_year: parsed.founded_year || siteConfig.foundedYear,
+          phone: parsed.phone || contactConfig.phone,
+          phone_formatted: parsed.phone_formatted || contactConfig.phoneFormatted,
+          email: parsed.email || contactConfig.email,
+          address: parsed.address || contactConfig.address,
+          maps_link: parsed.maps_link || contactConfig.mapsLink,
+          about_title: parsed.about_title || siteConfig.philosophy.title,
+          about_header: parsed.about_header || siteConfig.philosophy.header,
+          about_accent_word: parsed.about_accent_word || siteConfig.philosophy.accentWord,
+          about_subtitle: parsed.about_subtitle || siteConfig.philosophy.subTitle,
+          about_intro: parsed.about_intro || siteConfig.philosophy.intro,
+          about_paragraph1: parsed.about_paragraph1 || siteConfig.philosophy.paragraph1,
+          about_paragraph2: parsed.about_paragraph2 || siteConfig.philosophy.paragraph2,
+          business_hours: parsed.business_hours || contactConfig.businessHours,
+          socials: parsed.socials || socialConfig,
+          pillars: parsed.pillars || siteConfig.pillars,
+          teaser_features: parsed.teaser_features || siteConfig.teaserFeatures,
+        };
+      }
+    } catch {}
     return {
       site_name: siteConfig.name,
       site_sub_name: siteConfig.subName,
@@ -51,6 +84,43 @@ export async function getSettings(): Promise<DbSettings> {
       pillars: siteConfig.pillars,
       teaser_features: siteConfig.teaserFeatures,
     };
+  }
+}
+
+export async function updateSettings(updates: Partial<DbSettings>): Promise<DbSettings> {
+  if (supabase) {
+    const { data: records, error: fetchError } = await supabase
+      .from("settings")
+      .select("id")
+      .limit(1);
+    
+    if (fetchError) throw fetchError;
+    const settingsId = records?.[0]?.id;
+    
+    if (!settingsId) {
+      const { data, error } = await supabase
+        .from("settings")
+        .insert([updates])
+        .select("*")
+        .single();
+      if (error) throw error;
+      return data as DbSettings;
+    } else {
+      const { data, error } = await supabase
+        .from("settings")
+        .update(updates)
+        .eq("id", settingsId)
+        .select("*")
+        .single();
+      if (error) throw error;
+      return data as DbSettings;
+    }
+  } else {
+    const current = localStorage.getItem("fashionking_mock_settings");
+    const currentObj = current ? JSON.parse(current) : {};
+    const updated = { ...currentObj, ...updates };
+    localStorage.setItem("fashionking_mock_settings", JSON.stringify(updated));
+    return updated as DbSettings;
   }
 }
 

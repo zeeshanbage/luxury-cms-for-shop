@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, LogOut, Plus, Trash2, Upload, Image, Video, Eye, EyeOff, CheckCircle2, Edit, X, GripVertical, Sparkles, Settings } from "lucide-react";
 
 import type { Product } from "@/types/db";
-import { getProducts, createProduct, deleteProduct, updateProduct, uploadProductMedia, updateProductsOrder, createCollection, updateCollection, deleteCollection, updateCollectionsOrder } from "@/services/db";
+import { getProducts, createProduct, deleteProduct, updateProduct, uploadProductMedia, updateProductsOrder, createCollection, updateCollection, deleteCollection, updateCollectionsOrder, updateSettings } from "@/services/db";
 import { useSettings, useCollections } from "@/hooks/useDbQueries";
 import { siteConfig } from "@/config/site";
 import { collectionsConfig } from "@/config/collections";
@@ -508,6 +509,214 @@ function CollectionsManagerModal({
               className="px-4 bg-luxury-gold hover:brightness-110 text-black font-semibold text-[10px] uppercase tracking-widest rounded-sm transition-all disabled:opacity-40"
             >
               Create
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Settings / Contact Info Manager Modal ─────────────────────────────────────
+interface SettingsManagerModalProps {
+  settings: any;
+  onClose: () => void;
+  onRefresh: () => void;
+}
+
+function SettingsManagerModal({
+  settings,
+  onClose,
+  onRefresh,
+}: SettingsManagerModalProps) {
+  const [siteSubName, setSiteSubName] = useState(settings?.site_sub_name || "");
+  const [phone, setPhone] = useState(settings?.phone || "");
+  const [phoneFormatted, setPhoneFormatted] = useState(settings?.phone_formatted || "");
+  const [email, setEmail] = useState(settings?.email || "");
+  const [address, setAddress] = useState(settings?.address || "");
+  const [mapsLink, setMapsLink] = useState(settings?.maps_link || "");
+  const [instagram, setInstagram] = useState(settings?.socials?.instagram || "");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    setSuccess(false);
+
+    try {
+      const updates = {
+        site_sub_name: siteSubName.trim(),
+        phone: phone.trim(),
+        phone_formatted: phoneFormatted.trim(),
+        email: email.trim(),
+        address: address.trim(),
+        maps_link: mapsLink.trim(),
+        socials: {
+          ...settings?.socials,
+          instagram: instagram.trim()
+        }
+      };
+
+      await updateSettings(updates);
+      setSuccess(true);
+      onRefresh();
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to update contact settings.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 select-text">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        className="w-full max-w-xl bg-luxury-black border border-luxury-gold/30 p-6 sm:p-8 rounded-sm shadow-[0_0_80px_rgba(197,168,128,0.2)] space-y-6 flex flex-col max-h-[90vh]"
+      >
+        <div className="flex items-center justify-between border-b border-luxury-gold/10 pb-3">
+          <div className="flex items-center gap-2">
+            <Edit className="text-luxury-gold" size={16} />
+            <h3 className="text-sm font-serif uppercase tracking-widest text-white">
+              Update Contact & Showroom Info
+            </h3>
+          </div>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300">
+            <X size={18} />
+          </button>
+        </div>
+
+        {error && (
+          <div className="p-3 bg-red-500/10 border border-red-500/25 text-red-400 text-xs rounded-sm tracking-wide">
+            ⚠ {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="p-3 bg-green-500/10 border border-green-500/25 text-green-400 text-xs rounded-sm tracking-wide flex items-center gap-2">
+            <CheckCircle2 size={14} /> Saved changes successfully!
+          </div>
+        )}
+
+        <form onSubmit={handleSave} className="flex-1 overflow-y-auto space-y-4 pr-1 pb-4">
+          <div className="space-y-1">
+            <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+              Signboard Subname / Tagline
+            </label>
+            <input
+              type="text"
+              value={siteSubName}
+              onChange={(e) => setSiteSubName(e.target.value)}
+              placeholder="e.g. Suit & Sherwani Specialist, Tailoring & Fabrics Exclusive"
+              className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-3.5 py-2.5 text-xs text-white placeholder-zinc-650 outline-none transition-all"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+                Dialable Phone Number (tel:)
+              </label>
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="e.g. +919960414588"
+                className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-3.5 py-2.5 text-xs text-white placeholder-zinc-650 outline-none transition-all"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+                Formatted Phone Display
+              </label>
+              <input
+                type="text"
+                value={phoneFormatted}
+                onChange={(e) => setPhoneFormatted(e.target.value)}
+                placeholder="e.g. +91 99604 14588"
+                className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-3.5 py-2.5 text-xs text-white placeholder-zinc-650 outline-none transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+              Email Address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. contact@fashionking.com"
+              className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-3.5 py-2.5 text-xs text-white placeholder-zinc-650 outline-none transition-all"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+              Showroom Physical Address (Also used to load Google Map)
+            </label>
+            <textarea
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="TAKIYA MASJID ROAD, SHAHINSHA NAGAR, BEED..."
+              rows={2}
+              className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-3.5 py-2.5 text-xs text-white placeholder-zinc-650 outline-none transition-all resize-none"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+              Google Maps Web Link (Get Directions URL)
+            </label>
+            <input
+              type="text"
+              value={mapsLink}
+              onChange={(e) => setMapsLink(e.target.value)}
+              placeholder="https://maps.app.goo.gl/..."
+              className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-3.5 py-2.5 text-xs text-white placeholder-zinc-650 outline-none transition-all"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+              Instagram Page Link
+            </label>
+            <input
+              type="text"
+              value={instagram}
+              onChange={(e) => setInstagram(e.target.value)}
+              placeholder="https://www.instagram.com/fashion_king_1188/..."
+              className="w-full bg-black/40 border border-luxury-gold/15 focus:border-luxury-gold/50 rounded-sm px-3.5 py-2.5 text-xs text-white placeholder-zinc-650 outline-none transition-all"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t border-luxury-gold/10">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-3 border border-white/10 text-zinc-400 hover:text-white text-xs tracking-widest uppercase rounded-sm transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-3 bg-luxury-gold hover:brightness-110 text-black font-semibold text-xs tracking-widest uppercase rounded-sm transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Save Changes"
+              )}
             </button>
           </div>
         </form>
@@ -1126,6 +1335,7 @@ export default function AdminPanel() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [needsPasswordSet, setNeedsPasswordSet] = useState(false);
   const [showCollectionsManager, setShowCollectionsManager] = useState(false);
+  const [showSettingsManager, setShowSettingsManager] = useState(false);
   const [activeCategory, setActiveCategory] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -1307,21 +1517,29 @@ export default function AdminPanel() {
       {/* Header */}
       <header className="border-b border-luxury-gold/10 bg-black/60 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full bg-luxury-gold/15 border border-luxury-gold/30 flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-3 group pointer-events-auto">
+            <div className="w-7 h-7 rounded-full bg-luxury-gold/15 border border-luxury-gold/30 flex items-center justify-center group-hover:border-luxury-gold/60 transition-colors">
               <Lock size={12} className="text-luxury-gold" />
             </div>
             <div>
-              <p className="text-xs font-serif tracking-[0.2em] text-white uppercase">{settings?.site_name || siteConfig.name}</p>
+              <p className="text-xs font-serif tracking-[0.2em] text-white uppercase group-hover:text-luxury-gold transition-colors">{settings?.site_name || siteConfig.name}</p>
               <p className="text-[9px] tracking-[0.3em] text-zinc-500 uppercase">Admin Studio</p>
             </div>
+          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              to="/"
+              className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-luxury-gold transition-colors font-sans font-semibold"
+            >
+              View Showroom
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-luxury-gold transition-colors"
+            >
+              <LogOut size={13} /> Sign Out
+            </button>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-luxury-gold transition-colors"
-          >
-            <LogOut size={13} /> Sign Out
-          </button>
         </div>
       </header>
 
@@ -1353,6 +1571,13 @@ export default function AdminPanel() {
             className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] tracking-[0.25em] uppercase font-sans font-semibold rounded-full bg-white/5 border border-luxury-gold/20 text-luxury-gold hover:bg-luxury-gold/5 transition-all"
           >
             <Settings size={12} /> Manage Collections
+          </button>
+
+          <button
+            onClick={() => setShowSettingsManager(true)}
+            className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] tracking-[0.25em] uppercase font-sans font-semibold rounded-full bg-white/5 border border-luxury-gold/20 text-luxury-gold hover:bg-luxury-gold/5 transition-all"
+          >
+            <Edit size={12} /> Update Contact Info
           </button>
         </div>
 
@@ -1482,6 +1707,18 @@ export default function AdminPanel() {
             onClose={() => setShowCollectionsManager(false)}
             onRefresh={() => {
               queryClient.invalidateQueries({ queryKey: ["collections"] });
+            }}
+          />
+        )}
+      </AnimatePresence>
+      {/* Settings/Contact Manager Modal Overlay */}
+      <AnimatePresence>
+        {showSettingsManager && (
+          <SettingsManagerModal
+            settings={settings}
+            onClose={() => setShowSettingsManager(false)}
+            onRefresh={() => {
+              queryClient.invalidateQueries({ queryKey: ["settings"] });
             }}
           />
         )}
