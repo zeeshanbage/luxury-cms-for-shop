@@ -101,19 +101,33 @@ export async function updateSettings(updates: Partial<DbSettings>): Promise<DbSe
       const { data, error } = await supabase
         .from("settings")
         .insert([updates])
-        .select("*")
-        .single();
+        .select("*");
+      
       if (error) throw error;
-      return data as DbSettings;
+      const created = data?.[0];
+      if (!created) {
+        throw new Error(
+          "Settings insert failed — no rows returned. " +
+          "This is usually caused by a missing INSERT Row Level Security (RLS) policy on your Supabase 'settings' table."
+        );
+      }
+      return created as DbSettings;
     } else {
       const { data, error } = await supabase
         .from("settings")
         .update(updates)
         .eq("id", settingsId)
-        .select("*")
-        .single();
+        .select("*");
+      
       if (error) throw error;
-      return data as DbSettings;
+      const updated = data?.[0];
+      if (!updated) {
+        throw new Error(
+          "Settings update failed — no rows were modified. " +
+          "This is usually caused by a missing UPDATE Row Level Security (RLS) policy on your Supabase 'settings' table."
+        );
+      }
+      return updated as DbSettings;
     }
   } else {
     const current = localStorage.getItem("fashionking_mock_settings");
