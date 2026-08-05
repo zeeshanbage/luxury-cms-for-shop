@@ -265,3 +265,18 @@ BEGIN
 END
 $$;
 
+-- Setup WRITE policies for settings table safely using a PL/pgSQL block
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'settings' AND policyname = 'Allow public insert') THEN
+        CREATE POLICY "Allow public insert" ON settings FOR INSERT TO public WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'settings' AND policyname = 'Allow public update') THEN
+        CREATE POLICY "Allow public update" ON settings FOR UPDATE TO public USING (true) WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'settings' AND policyname = 'Allow public delete') THEN
+        CREATE POLICY "Allow public delete" ON settings FOR DELETE TO public USING (true);
+    END IF;
+END
+$$;
+
