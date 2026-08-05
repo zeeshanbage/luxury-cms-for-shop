@@ -631,7 +631,7 @@ export default function Home() {
             src={getImageUrl(imageConfig.heroImages?.storefront || "/images/signboard.png")}
             alt={`${settings?.site_name || siteConfig.name} Storefront`}
             style={{ y: heroImageParallax, scale: heroImageScale, transformOrigin: "top" }}
-            className="w-full h-full object-cover object-top filter brightness-[1.08] contrast-[1.03] saturate-[1.02]"
+            className="w-full h-full object-contain object-top filter brightness-[1.08] contrast-[1.03] saturate-[1.02]"
           />
           {/* Very light dark overlay to guarantee text legibility while keeping the signboard fully visible */}
           <div className="absolute inset-0 bg-black/15 pointer-events-none" />
