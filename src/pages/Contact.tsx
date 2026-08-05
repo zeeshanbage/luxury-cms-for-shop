@@ -69,8 +69,9 @@ export default function Contact() {
 
   return (
     <div className="py-20 md:py-32 relative overflow-hidden">
-      {/* Ambient background glow */}
+      {/* Ambient background glows */}
       <div className="absolute bottom-[20%] right-[-10%] w-[40%] h-[40%] bg-luxury-gold/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-[10%] left-[-15%] w-[45%] h-[45%] bg-luxury-gold/[0.04] blur-[150px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <motion.div
@@ -98,7 +99,7 @@ export default function Contact() {
             <motion.div variants={itemVariants} className="lg:col-span-5 space-y-8 flex flex-col justify-between">
               <div className="space-y-8">
                 {/* Showroom Details */}
-                <div className="glass-card p-8 rounded-sm space-y-6">
+                <div className="bg-gradient-to-br from-white/[0.04] via-white/[0.015] to-black/60 backdrop-blur-xl border border-white/10 hover:border-luxury-gold/30 p-8 rounded-sm space-y-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] transition-all duration-500">
                   <h2 className="text-lg uppercase tracking-widest font-serif text-white pb-3 border-b border-luxury-gold/10">
                     The Showroom
                   </h2>
@@ -167,7 +168,7 @@ export default function Contact() {
                 </div>
 
                 {/* Hours details */}
-                <div className="glass-card p-8 rounded-sm space-y-6">
+                <div className="bg-gradient-to-br from-white/[0.04] via-white/[0.015] to-black/60 backdrop-blur-xl border border-white/10 hover:border-luxury-gold/30 p-8 rounded-sm space-y-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] transition-all duration-500">
                   <h2 className="text-lg uppercase tracking-widest font-serif text-white pb-3 border-b border-luxury-gold/10">
                     Hours of Business
                   </h2>
@@ -190,7 +191,7 @@ export default function Contact() {
 
             {/* Interactive Map Embed */}
             <motion.div variants={itemVariants} className="lg:col-span-7 w-full h-full min-h-[380px] lg:min-h-[460px] group/map">
-              <div className="glass-card p-2 rounded-sm overflow-hidden w-full h-full shadow-[0_0_30px_rgba(197,168,128,0.12)] hover:shadow-[0_0_50px_rgba(197,168,128,0.28)] transition-all duration-700 border border-white/10 hover:border-luxury-gold/30 relative flex flex-col justify-between">
+              <div className="bg-gradient-to-br from-white/[0.04] via-white/[0.015] to-black/60 backdrop-blur-xl border border-white/10 hover:border-luxury-gold/30 p-2.5 rounded-sm overflow-hidden w-full h-full shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] hover:shadow-[0_0_50px_rgba(197,168,128,0.28)] transition-all duration-700 relative flex flex-col justify-between">
                 <div className="relative w-full h-[380px] lg:h-[480px] overflow-hidden rounded-sm">
                   <iframe
                     title={`${settings?.site_name || "Showroom"} Location Map`}

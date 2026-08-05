@@ -86,14 +86,14 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
               <Lock size={22} className="text-luxury-gold" />
             </div>
             <div className="text-center">
-              <h1 className="text-xl font-serif font-light tracking-widest text-white uppercase">Admin Access</h1>
-              <p className="text-[10px] tracking-[0.3em] text-zinc-500 mt-1 uppercase">{settings?.site_name || siteConfig.name} Studio</p>
+              <h1 className="text-xl font-semibold text-white font-sans">Admin Access</h1>
+              <p className="text-xs text-zinc-400 mt-1 font-medium">{settings?.site_name || siteConfig.name} Studio</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest text-zinc-500">Email Address</label>
+              <label className="text-xs uppercase tracking-normal text-zinc-500">Email Address</label>
               <input
                 type="email"
                 value={email}
@@ -107,7 +107,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
             <div className="space-y-1 relative">
               <div className="flex justify-between items-center">
-                <label className="text-[10px] uppercase tracking-widest text-zinc-500">Password</label>
+                <label className="text-xs uppercase tracking-normal text-zinc-500">Password</label>
               </div>
               <div className="relative">
                 <input
@@ -129,7 +129,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             </div>
 
             {error && (
-              <p className="text-red-400 text-[11px] text-center tracking-wide leading-relaxed bg-red-500/5 border border-red-500/10 p-2.5 rounded-sm whitespace-pre-line">
+              <p className="text-red-400 text-xs text-center tracking-wide leading-relaxed bg-red-500/5 border border-red-500/10 p-2.5 rounded-sm whitespace-pre-line">
                 {error}
               </p>
             )}
@@ -137,7 +137,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-luxury-gold hover:brightness-110 text-black font-sans font-semibold tracking-widest text-xs uppercase rounded-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3.5 bg-luxury-gold hover:brightness-110 text-black font-sans font-semibold tracking-normal text-xs uppercase rounded-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -205,14 +205,14 @@ function SetPasswordScreen({ onSave }: { onSave: (password: string) => Promise<v
               <Sparkles size={22} className="text-luxury-gold animate-pulse" />
             </div>
             <div className="text-center">
-              <h1 className="text-xl font-serif font-light tracking-widest text-white uppercase">Set Password</h1>
-              <p className="text-[10px] tracking-[0.3em] text-zinc-500 mt-1 uppercase">Configure your admin credentials</p>
+              <h1 className="text-xl font-sans font-light tracking-normal text-white uppercase">Set Password</h1>
+              <p className="text-xs tracking-normal text-zinc-500 mt-1 uppercase">Configure your admin credentials</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1 relative">
-              <label className="text-[10px] uppercase tracking-widest text-zinc-500">New Password</label>
+              <label className="text-xs uppercase tracking-normal text-zinc-500">New Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -233,7 +233,7 @@ function SetPasswordScreen({ onSave }: { onSave: (password: string) => Promise<v
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest text-zinc-500">Confirm Password</label>
+              <label className="text-xs uppercase tracking-normal text-zinc-500">Confirm Password</label>
               <input
                 type={showPassword ? "text" : "password"}
                 value={confirmPassword}
@@ -245,7 +245,7 @@ function SetPasswordScreen({ onSave }: { onSave: (password: string) => Promise<v
             </div>
 
             {error && (
-              <p className="text-red-400 text-[11px] text-center tracking-wide leading-relaxed bg-red-500/5 border border-red-500/10 p-2.5 rounded-sm whitespace-pre-line">
+              <p className="text-red-400 text-xs text-center tracking-wide leading-relaxed bg-red-500/5 border border-red-500/10 p-2.5 rounded-sm whitespace-pre-line">
                 {error}
               </p>
             )}
@@ -253,7 +253,7 @@ function SetPasswordScreen({ onSave }: { onSave: (password: string) => Promise<v
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-luxury-gold hover:brightness-110 text-black font-sans font-semibold tracking-widest text-xs uppercase rounded-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3.5 bg-luxury-gold hover:brightness-110 text-black font-sans font-semibold tracking-normal text-xs uppercase rounded-sm transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -377,7 +377,7 @@ function CollectionsManagerModal({
         <div className="flex items-center justify-between border-b border-luxury-gold/10 pb-3">
           <div className="flex items-center gap-2">
             <Settings className="text-luxury-gold" size={16} />
-            <h3 className="text-sm font-serif uppercase tracking-widest text-white">
+            <h3 className="text-sm font-sans uppercase tracking-normal text-white">
               Manage Collections
             </h3>
           </div>
@@ -436,24 +436,24 @@ function CollectionsManagerModal({
                       <button
                         type="button"
                         onClick={() => handleRenameSave(col.id)}
-                        className="px-2.5 py-1 bg-luxury-gold text-black rounded-sm text-[10px] uppercase font-bold tracking-widest"
+                        className="px-2.5 py-1 bg-luxury-gold text-black rounded-sm text-xs uppercase font-bold tracking-normal"
                       >
                         Save
                       </button>
                       <button
                         type="button"
                         onClick={() => setEditingColId(null)}
-                        className="px-2.5 py-1 border border-white/10 text-zinc-400 rounded-sm text-[10px] uppercase font-bold tracking-widest"
+                        className="px-2.5 py-1 border border-white/10 text-zinc-400 rounded-sm text-xs uppercase font-bold tracking-normal"
                       >
                         Cancel
                       </button>
                     </div>
                   ) : (
                     <div>
-                      <p className="text-xs font-serif text-white font-light tracking-wide truncate">
+                      <p className="text-xs font-sans text-white font-light tracking-wide truncate">
                         {col.title}
                       </p>
-                      <p className="text-[10px] text-zinc-500 tracking-wider font-sans uppercase mt-0.5">
+                      <p className="text-xs text-zinc-500 tracking-normal font-sans uppercase mt-0.5">
                         {productCount} {productCount === 1 ? "product" : "products"}
                       </p>
                     </div>
@@ -492,7 +492,7 @@ function CollectionsManagerModal({
 
         {/* Add New Collection Form */}
         <form onSubmit={handleAdd} className="border-t border-luxury-gold/15 pt-4 space-y-2">
-          <label className="text-[10px] uppercase tracking-widest text-zinc-500 block">
+          <label className="text-xs uppercase tracking-normal text-zinc-500 block">
             Create New Collection
           </label>
           <div className="flex gap-2">
@@ -506,7 +506,7 @@ function CollectionsManagerModal({
             <button
               type="submit"
               disabled={loading || !newTitle.trim()}
-              className="px-4 bg-luxury-gold hover:brightness-110 text-black font-semibold text-[10px] uppercase tracking-widest rounded-sm transition-all disabled:opacity-40"
+              className="px-4 bg-luxury-gold hover:brightness-110 text-black font-semibold text-xs uppercase tracking-normal rounded-sm transition-all disabled:opacity-40"
             >
               Create
             </button>
@@ -517,18 +517,18 @@ function CollectionsManagerModal({
   );
 }
 
-// ─── Settings / Contact Info Manager Modal ─────────────────────────────────────
-interface SettingsManagerModalProps {
+// ─── Settings / Contact Info Manager (Inline Page View) ───────────────────────
+interface SettingsManagerProps {
   settings: any;
   onClose: () => void;
   onRefresh: () => void;
 }
 
-function SettingsManagerModal({
+function SettingsManager({
   settings,
   onClose,
   onRefresh,
-}: SettingsManagerModalProps) {
+}: SettingsManagerProps) {
   const [siteSubName, setSiteSubName] = useState(settings?.site_sub_name || "");
   const [phone, setPhone] = useState(settings?.phone || "");
   const [phoneFormatted, setPhoneFormatted] = useState(settings?.phone_formatted || "");
@@ -585,7 +585,7 @@ function SettingsManagerModal({
         <div className="flex items-center justify-between border-b border-luxury-gold/10 pb-3">
           <div className="flex items-center gap-2">
             <Edit className="text-luxury-gold" size={16} />
-            <h3 className="text-sm font-serif uppercase tracking-widest text-white">
+            <h3 className="text-sm font-sans uppercase tracking-normal text-white">
               Update Contact & Showroom Info
             </h3>
           </div>
@@ -608,7 +608,7 @@ function SettingsManagerModal({
 
         <form onSubmit={handleSave} className="flex-1 overflow-y-auto space-y-4 pr-1 pb-4">
           <div className="space-y-1">
-            <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+            <label className="text-xs uppercase tracking-normal text-zinc-500 block">
               Signboard Subname / Tagline
             </label>
             <input
@@ -622,7 +622,7 @@ function SettingsManagerModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+              <label className="text-xs uppercase tracking-normal text-zinc-500 block">
                 Dialable Phone Number (tel:)
               </label>
               <input
@@ -634,7 +634,7 @@ function SettingsManagerModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+              <label className="text-xs uppercase tracking-normal text-zinc-500 block">
                 Formatted Phone Display
               </label>
               <input
@@ -648,7 +648,7 @@ function SettingsManagerModal({
           </div>
 
           <div className="space-y-1">
-            <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+            <label className="text-xs uppercase tracking-normal text-zinc-500 block">
               Email Address
             </label>
             <input
@@ -661,7 +661,7 @@ function SettingsManagerModal({
           </div>
 
           <div className="space-y-1">
-            <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+            <label className="text-xs uppercase tracking-normal text-zinc-500 block">
               Showroom Physical Address (Also used to load Google Map)
             </label>
             <textarea
@@ -674,7 +674,7 @@ function SettingsManagerModal({
           </div>
 
           <div className="space-y-1">
-            <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+            <label className="text-xs uppercase tracking-normal text-zinc-500 block">
               Google Maps Web Link (Get Directions URL)
             </label>
             <input
@@ -687,7 +687,7 @@ function SettingsManagerModal({
           </div>
 
           <div className="space-y-1">
-            <label className="text-[9px] uppercase tracking-widest text-zinc-500 block">
+            <label className="text-xs uppercase tracking-normal text-zinc-500 block">
               Instagram Page Link
             </label>
             <input
@@ -703,14 +703,14 @@ function SettingsManagerModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 border border-white/10 text-zinc-400 hover:text-white text-xs tracking-widest uppercase rounded-sm transition-all"
+              className="flex-1 py-3 border border-white/10 text-zinc-400 hover:text-white text-xs tracking-normal uppercase rounded-sm transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-3 bg-luxury-gold hover:brightness-110 text-black font-semibold text-xs tracking-widest uppercase rounded-sm transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-luxury-gold hover:brightness-110 text-black font-semibold text-xs tracking-normal uppercase rounded-sm transition-all disabled:opacity-40 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -725,12 +725,12 @@ function SettingsManagerModal({
   );
 }
 
-// ─── Analytics / Insights Dashboard Modal ──────────────────────────────────────
-interface AnalyticsDashboardModalProps {
+// ─── Analytics / Insights Dashboard (Inline View) ──────────────────────────────
+interface AnalyticsDashboardProps {
   onClose: () => void;
 }
 
-function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
+function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -820,10 +820,10 @@ function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
               <BarChart3 className="text-luxury-gold" size={16} />
             </div>
             <div>
-              <h3 className="text-sm font-serif uppercase tracking-widest text-white">
+              <h3 className="text-sm font-sans uppercase tracking-normal text-white">
                 Showroom Visitor Insights
               </h3>
-              <p className="text-[9px] tracking-wider text-zinc-500 uppercase mt-0.5">
+              <p className="text-xs tracking-normal text-zinc-500 uppercase mt-0.5">
                 Real-time lead conversion & style engagement trends
               </p>
             </div>
@@ -859,7 +859,7 @@ function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
         {loading ? (
           <div className="flex-1 flex flex-col items-center justify-center space-y-3">
             <div className="w-8 h-8 border-2 border-luxury-gold border-t-transparent rounded-full animate-spin" />
-            <span className="text-[10px] tracking-[0.2em] uppercase text-zinc-500">Loading Insights...</span>
+            <span className="text-xs tracking-normal uppercase text-zinc-500">Loading Insights...</span>
           </div>
         ) : events.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
@@ -867,8 +867,8 @@ function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
               <Users size={20} className="text-zinc-650" />
             </div>
             <div className="space-y-1">
-              <h4 className="text-xs uppercase tracking-widest text-zinc-400 font-serif">No Visitor Logs Yet</h4>
-              <p className="text-[10px] text-zinc-600 max-w-xs leading-relaxed">
+              <h4 className="text-xs uppercase tracking-normal text-zinc-400 font-sans">No Visitor Logs Yet</h4>
+              <p className="text-xs text-zinc-600 max-w-xs leading-relaxed">
                 As soon as users browse the showroom, open items, or click to consult, stats will display here.
               </p>
             </div>
@@ -878,20 +878,20 @@ function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
             {/* Row 1: High-Level Analytics Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-[#030303] border border-white/5 p-4 rounded-sm space-y-2">
-                <span className="text-[9px] uppercase tracking-widest text-zinc-500 block">Total Page Views</span>
-                <p className="text-2xl font-serif text-white font-light">{totalVisits}</p>
+                <span className="text-xs uppercase tracking-normal text-zinc-500 block">Total Page Views</span>
+                <p className="text-2xl font-sans text-white font-light">{totalVisits}</p>
               </div>
               <div className="bg-[#030303] border border-white/5 p-4 rounded-sm space-y-2">
-                <span className="text-[9px] uppercase tracking-widest text-zinc-500 block">Unique Visitors</span>
-                <p className="text-2xl font-serif text-white font-light">{uniqueSessions}</p>
+                <span className="text-xs uppercase tracking-normal text-zinc-500 block">Unique Visitors</span>
+                <p className="text-2xl font-sans text-white font-light">{uniqueSessions}</p>
               </div>
               <div className="bg-[#030303] border border-white/5 p-4 rounded-sm space-y-2">
-                <span className="text-[9px] uppercase tracking-widest text-zinc-500 block">Lookbook Expands</span>
-                <p className="text-2xl font-serif text-white font-light">{totalProductExpands}</p>
+                <span className="text-xs uppercase tracking-normal text-zinc-500 block">Lookbook Expands</span>
+                <p className="text-2xl font-sans text-white font-light">{totalProductExpands}</p>
               </div>
               <div className="bg-[#030303] border border-white/5 p-4 rounded-sm space-y-2">
-                <span className="text-[9px] uppercase tracking-widest text-zinc-500 block">Contact Actions</span>
-                <p className="text-2xl font-serif text-luxury-gold font-light">{totalLeads}</p>
+                <span className="text-xs uppercase tracking-normal text-zinc-500 block">Contact Actions</span>
+                <p className="text-2xl font-sans text-luxury-gold font-light">{totalLeads}</p>
               </div>
             </div>
 
@@ -899,7 +899,7 @@ function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Category Style Trends Chart */}
               <div className="md:col-span-8 bg-[#030303] border border-white/5 p-5 rounded-sm space-y-4">
-                <h4 className="text-xs uppercase tracking-widest text-white font-serif border-b border-white/5 pb-2">
+                <h4 className="text-xs uppercase tracking-normal text-white font-sans border-b border-white/5 pb-2">
                   Category Interest Split (Style trends)
                 </h4>
                 <div className="space-y-4 pt-1">
@@ -907,7 +907,7 @@ function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
                     const percent = Math.round((count / maxCategoryViews) * 100);
                     return (
                       <div key={cat} className="space-y-1">
-                        <div className="flex justify-between text-[10px] tracking-wider uppercase">
+                        <div className="flex justify-between text-xs tracking-normal uppercase">
                           <span className="text-zinc-300">{cat}</span>
                           <span className="text-luxury-gold font-semibold">{count} views</span>
                         </div>
@@ -921,7 +921,7 @@ function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
                     );
                   })}
                   {Object.keys(categoryViews).length === 0 && (
-                    <p className="text-[10px] text-zinc-600 italic">No category switch actions logged yet.</p>
+                    <p className="text-xs text-zinc-600 italic">No category switch actions logged yet.</p>
                   )}
                 </div>
               </div>
@@ -929,20 +929,20 @@ function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
               {/* Device Split Chart */}
               <div className="md:col-span-4 bg-[#030303] border border-white/5 p-5 rounded-sm flex flex-col justify-between">
                 <div>
-                  <h4 className="text-xs uppercase tracking-widest text-white font-serif border-b border-white/5 pb-2 mb-4">
+                  <h4 className="text-xs uppercase tracking-normal text-white font-sans border-b border-white/5 pb-2 mb-4">
                     Device Split
                   </h4>
                   <div className="flex justify-around items-center pt-2">
                     <div className="flex flex-col items-center gap-1">
                       <Laptop size={20} className={desktopPercent > mobilePercent ? "text-luxury-gold" : "text-zinc-600"} />
-                      <span className="text-[9px] uppercase tracking-widest text-zinc-500">Desktop</span>
-                      <span className="text-sm font-serif text-white">{desktopPercent}%</span>
+                      <span className="text-xs uppercase tracking-normal text-zinc-500">Desktop</span>
+                      <span className="text-sm font-sans text-white">{desktopPercent}%</span>
                     </div>
                     <div className="w-[1px] h-8 bg-white/5" />
                     <div className="flex flex-col items-center gap-1">
                       <Smartphone size={20} className={mobilePercent > desktopPercent ? "text-luxury-gold" : "text-zinc-600"} />
-                      <span className="text-[9px] uppercase tracking-widest text-zinc-500">Mobile</span>
-                      <span className="text-sm font-serif text-white">{mobilePercent}%</span>
+                      <span className="text-xs uppercase tracking-normal text-zinc-500">Mobile</span>
+                      <span className="text-sm font-sans text-white">{mobilePercent}%</span>
                     </div>
                   </div>
                 </div>
@@ -957,37 +957,37 @@ function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Top Performing Lookbook Cards */}
               <div className="md:col-span-7 bg-[#030303] border border-white/5 p-5 rounded-sm space-y-4">
-                <h4 className="text-xs uppercase tracking-widest text-white font-serif border-b border-white/5 pb-2">
+                <h4 className="text-xs uppercase tracking-normal text-white font-sans border-b border-white/5 pb-2">
                   Top Performing Lookbook Items
                 </h4>
                 <div className="space-y-3">
                   {topProductsSorted.map(([title, count], idx) => (
                     <div key={title} className="flex items-center justify-between text-xs border-b border-white/5 pb-2 last:border-0 last:pb-0">
                       <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-mono text-zinc-600">0{idx + 1}</span>
+                        <span className="text-xs font-mono text-zinc-600">0{idx + 1}</span>
                         <span className="text-zinc-300 font-light truncate max-w-[200px] sm:max-w-xs">{title}</span>
                       </div>
-                      <span className="text-[10px] uppercase font-mono tracking-widest bg-luxury-gold/10 text-luxury-gold px-2 py-0.5 rounded-sm">
+                      <span className="text-xs uppercase font-mono tracking-normal bg-luxury-gold/10 text-luxury-gold px-2 py-0.5 rounded-sm">
                         {count} clicks
                       </span>
                     </div>
                   ))}
                   {topProductsSorted.length === 0 && (
-                    <p className="text-[10px] text-zinc-600 italic">No lookbook cards opened yet.</p>
+                    <p className="text-xs text-zinc-600 italic">No lookbook cards opened yet.</p>
                   )}
                 </div>
               </div>
 
               {/* Lead Capture channels */}
               <div className="md:col-span-5 bg-[#030303] border border-white/5 p-5 rounded-sm space-y-4">
-                <h4 className="text-xs uppercase tracking-widest text-white font-serif border-b border-white/5 pb-2">
+                <h4 className="text-xs uppercase tracking-normal text-white font-sans border-b border-white/5 pb-2">
                   Lead Click Channels
                 </h4>
                 <div className="space-y-3">
                   {Object.entries(leadChannels).map(([channel, count]) => {
                     const label = channel.replace(/_/g, " ").replace("click", "");
                     return (
-                      <div key={channel} className="flex items-center justify-between text-[11px]">
+                      <div key={channel} className="flex items-center justify-between text-xs">
                         <span className="text-zinc-400 font-light capitalize">{label}</span>
                         <span className="text-white font-medium flex items-center gap-1.5">
                           <MousePointer size={11} className="text-luxury-gold" /> {count} clicks
@@ -996,7 +996,7 @@ function AnalyticsDashboardModal({ onClose }: AnalyticsDashboardModalProps) {
                     );
                   })}
                   {Object.keys(leadChannels).length === 0 && (
-                    <p className="text-[10px] text-zinc-600 italic">No contact actions clicked yet.</p>
+                    <p className="text-xs text-zinc-600 italic">No contact actions clicked yet.</p>
                   )}
                 </div>
               </div>
@@ -1104,7 +1104,7 @@ function AddProductForm({
       exit={{ opacity: 0, y: -8 }}
       className="glass-card p-8 rounded-sm border border-luxury-gold/20 space-y-6"
     >
-      <h3 className="text-sm uppercase tracking-widest font-serif text-white border-b border-luxury-gold/10 pb-4">
+      <h3 className="text-sm uppercase tracking-normal font-sans text-white border-b border-luxury-gold/10 pb-4">
         Add New Product (Multiple Upload Support)
       </h3>
 
@@ -1118,8 +1118,8 @@ function AddProductForm({
         <div className="flex flex-col items-center space-y-3 text-zinc-500 group-hover:text-zinc-300 transition-colors">
           <Upload size={24} />
           <div className="text-center">
-            <p className="text-xs tracking-wider">Drop one or more images/videos here</p>
-            <p className="text-[10px] text-zinc-600 mt-1">or click to browse multiple files</p>
+            <p className="text-xs tracking-normal">Drop one or more images/videos here</p>
+            <p className="text-xs text-zinc-600 mt-1">or click to browse multiple files</p>
           </div>
         </div>
         <input
@@ -1135,7 +1135,7 @@ function AddProductForm({
       {/* Queued Media Items List */}
       {queuedMedia.length > 0 && (
         <div className="space-y-4">
-          <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">
+          <p className="text-xs uppercase tracking-normal text-zinc-400 font-semibold">
             Queued Files ({queuedMedia.length})
           </p>
           <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
@@ -1151,7 +1151,7 @@ function AddProductForm({
                   ) : (
                     <video src={item.previewUrl} className="w-full h-full object-cover" muted />
                   )}
-                  <span className="absolute top-1 left-1 bg-black/75 rounded-full px-1.5 py-0.5 text-[7px] uppercase tracking-wider text-zinc-300 font-sans">
+                  <span className="absolute top-1 left-1 bg-black/75 rounded-full px-1.5 py-0.5 text-[7px] uppercase tracking-normal text-zinc-300 font-sans">
                     #{idx + 1}
                   </span>
                 </div>
@@ -1159,7 +1159,7 @@ function AddProductForm({
                 {/* Subtitle Input */}
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[9px] uppercase tracking-widest text-luxury-gold font-bold font-sans">
+                    <span className="text-xs uppercase tracking-normal text-luxury-gold font-bold font-sans">
                       {item.mediaType} • {item.file.name.substring(0, 16)}...
                     </span>
                   </div>
@@ -1188,7 +1188,7 @@ function AddProductForm({
       {/* Title & Subtitle */}
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-[10px] uppercase tracking-widest text-zinc-400">Product Title *</label>
+          <label className="text-xs uppercase tracking-normal text-zinc-400">Product Title *</label>
           <input
             type="text"
             value={title}
@@ -1198,7 +1198,7 @@ function AddProductForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-[10px] uppercase tracking-widest text-zinc-400">Main Description</label>
+          <label className="text-xs uppercase tracking-normal text-zinc-400">Main Description</label>
           <input
             type="text"
             value={subtitle}
@@ -1213,14 +1213,14 @@ function AddProductForm({
       <div className="flex gap-3 pt-2">
         <button
           onClick={onCancel}
-          className="flex-1 py-3 border border-white/10 text-zinc-400 hover:text-white text-xs tracking-widest uppercase rounded-sm transition-all"
+          className="flex-1 py-3 border border-white/10 text-zinc-400 hover:text-white text-xs tracking-normal uppercase rounded-sm transition-all"
         >
           Cancel
         </button>
         <button
           onClick={handleSave}
           disabled={!canSave || saving}
-          className="flex-1 py-3 bg-luxury-gold hover:brightness-110 text-black font-semibold text-xs tracking-widest uppercase rounded-sm transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+          className="flex-1 py-3 bg-luxury-gold hover:brightness-110 text-black font-semibold text-xs tracking-normal uppercase rounded-sm transition-all disabled:opacity-40 flex items-center justify-center gap-2"
         >
           {saved ? (
             <><CheckCircle2 size={14} /> Saved!</>
@@ -1263,14 +1263,14 @@ function AdminProductCard({
         ) : media?.type === "video" ? (
           <video src={media.url} className="w-full h-full object-cover" muted playsInline />
         ) : (
-          <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-zinc-700 uppercase tracking-widest text-[9px]">
+          <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-zinc-700 uppercase tracking-normal text-xs">
             No Media
           </div>
         )}
         
         {/* Type badge */}
         {media && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 rounded-full px-2 py-0.5 text-[9px] uppercase tracking-wider text-zinc-300 border border-white/10">
+          <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 rounded-full px-2 py-0.5 text-xs uppercase tracking-normal text-zinc-300 border border-white/10">
             {media.type === "image" ? <Image size={8} /> : <Video size={8} />}
             {media.type}
           </div>
@@ -1279,7 +1279,7 @@ function AdminProductCard({
         {/* Files Count and Drag Handle Badges */}
         <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10">
           {product.media && product.media.length > 1 && (
-            <div className="bg-luxury-gold text-black rounded-full px-2 py-0.5 text-[8px] uppercase tracking-wider font-bold shadow-md font-sans">
+            <div className="bg-luxury-gold text-black rounded-full px-2 py-0.5 text-[8px] uppercase tracking-normal font-bold shadow-md font-sans">
               {product.media.length} files
             </div>
           )}
@@ -1291,8 +1291,8 @@ function AdminProductCard({
 
       {/* Info */}
       <div className="p-4 space-y-1">
-        <p className="text-sm font-serif text-white font-light tracking-wide truncate">{product.title}</p>
-        <p className="text-[11px] text-zinc-500 font-light leading-relaxed line-clamp-2">{product.subtitle || "—"}</p>
+        <p className="text-sm font-sans text-white font-light tracking-wide truncate">{product.title}</p>
+        <p className="text-xs text-zinc-500 font-light leading-relaxed line-clamp-2">{product.subtitle || "—"}</p>
       </div>
 
       {/* Actions */}
@@ -1301,13 +1301,13 @@ function AdminProductCard({
           <div className="flex gap-2">
             <button
               onClick={onEdit}
-              className="flex-1 py-2 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-widest text-zinc-300 hover:text-white border border-white/10 hover:border-white/30 rounded-sm transition-all"
+              className="flex-1 py-2 flex items-center justify-center gap-1.5 text-xs uppercase tracking-normal text-zinc-300 hover:text-white border border-white/10 hover:border-white/30 rounded-sm transition-all"
             >
               <Edit size={11} /> Edit
             </button>
             <button
               onClick={() => setConfirming(true)}
-              className="flex-1 py-2 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-500/10 hover:border-red-500/30 rounded-sm transition-all"
+              className="flex-1 py-2 flex items-center justify-center gap-1.5 text-xs uppercase tracking-normal text-red-400 hover:text-red-300 border border-red-500/10 hover:border-red-500/30 rounded-sm transition-all"
             >
               <Trash2 size={11} /> Remove
             </button>
@@ -1316,13 +1316,13 @@ function AdminProductCard({
           <div className="flex gap-2">
             <button
               onClick={() => setConfirming(false)}
-              className="flex-1 py-2 text-[10px] uppercase tracking-widest text-zinc-400 border border-white/10 rounded-sm transition-all hover:text-white"
+              className="flex-1 py-2 text-xs uppercase tracking-normal text-zinc-400 border border-white/10 rounded-sm transition-all hover:text-white"
             >
               Keep
             </button>
             <button
               onClick={onDelete}
-              className="flex-1 py-2 text-[10px] uppercase tracking-widest text-white bg-red-600/80 hover:bg-red-600 rounded-sm transition-all"
+              className="flex-1 py-2 text-xs uppercase tracking-normal text-white bg-red-600/80 hover:bg-red-600 rounded-sm transition-all"
             >
               Delete
             </button>
@@ -1439,7 +1439,7 @@ function EditProductModal({ product, categoryId, onSave, onClose }: EditProductM
         className="w-full max-w-2xl bg-luxury-charcoal border border-luxury-gold/20 rounded-sm p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between border-b border-luxury-gold/15 pb-4">
-          <h3 className="text-base uppercase tracking-widest font-serif text-white">
+          <h3 className="text-base uppercase tracking-normal font-sans text-white">
             Edit Product
           </h3>
           <button
@@ -1453,7 +1453,7 @@ function EditProductModal({ product, categoryId, onSave, onClose }: EditProductM
         {/* Title & Subtitle */}
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-zinc-400">Product Title *</label>
+            <label className="text-xs uppercase tracking-normal text-zinc-400">Product Title *</label>
             <input
               type="text"
               value={title}
@@ -1463,7 +1463,7 @@ function EditProductModal({ product, categoryId, onSave, onClose }: EditProductM
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-zinc-400">Main Description</label>
+            <label className="text-xs uppercase tracking-normal text-zinc-400">Main Description</label>
             <input
               type="text"
               value={subtitle}
@@ -1476,7 +1476,7 @@ function EditProductModal({ product, categoryId, onSave, onClose }: EditProductM
 
         {/* Existing Media List */}
         <div className="space-y-3">
-          <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">
+          <p className="text-xs uppercase tracking-normal text-zinc-400 font-semibold">
             Existing Media ({existingMedia.length})
           </p>
           {existingMedia.length === 0 ? (
@@ -1494,12 +1494,12 @@ function EditProductModal({ product, categoryId, onSave, onClose }: EditProductM
                     ) : (
                       <video src={item.url} className="w-full h-full object-cover" muted />
                     )}
-                    <span className="absolute top-1 left-1 bg-black/75 rounded-full px-1 py-0.5 text-[7px] uppercase tracking-wider text-zinc-300 font-sans">
+                    <span className="absolute top-1 left-1 bg-black/75 rounded-full px-1 py-0.5 text-[7px] uppercase tracking-normal text-zinc-300 font-sans">
                       #{idx + 1}
                     </span>
                   </div>
                   <div className="flex-1 space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-luxury-gold font-bold font-sans">
+                    <span className="text-xs uppercase tracking-normal text-luxury-gold font-bold font-sans">
                       {item.type}
                     </span>
                     <input
@@ -1525,7 +1525,7 @@ function EditProductModal({ product, categoryId, onSave, onClose }: EditProductM
 
         {/* Add More Media Selector */}
         <div className="space-y-4">
-          <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">
+          <p className="text-xs uppercase tracking-normal text-zinc-400 font-semibold">
             Add More Media
           </p>
           <div
@@ -1557,12 +1557,12 @@ function EditProductModal({ product, categoryId, onSave, onClose }: EditProductM
                     ) : (
                       <video src={item.previewUrl} className="w-full h-full object-cover" muted />
                     )}
-                    <span className="absolute top-1 left-1 bg-luxury-gold text-black rounded-full px-1.5 py-0.5 text-[7px] uppercase tracking-wider font-bold font-sans">
+                    <span className="absolute top-1 left-1 bg-luxury-gold text-black rounded-full px-1.5 py-0.5 text-[7px] uppercase tracking-normal font-bold font-sans">
                       New
                     </span>
                   </div>
                   <div className="flex-1 space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-luxury-gold font-bold font-sans">
+                    <span className="text-xs uppercase tracking-normal text-luxury-gold font-bold font-sans">
                       {item.mediaType} • {item.file.name.substring(0, 16)}...
                     </span>
                     <input
@@ -1589,14 +1589,14 @@ function EditProductModal({ product, categoryId, onSave, onClose }: EditProductM
         <div className="flex gap-3 pt-4 border-t border-luxury-gold/15">
           <button
             onClick={onClose}
-            className="flex-1 py-3 border border-white/10 text-zinc-400 hover:text-white text-xs tracking-widest uppercase rounded-sm transition-all"
+            className="flex-1 py-3 border border-white/10 text-zinc-400 hover:text-white text-xs tracking-normal uppercase rounded-sm transition-all"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!canSave || saving}
-            className="flex-1 py-3 bg-luxury-gold hover:brightness-110 text-black font-semibold text-xs tracking-widest uppercase rounded-sm transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+            className="flex-1 py-3 bg-luxury-gold hover:brightness-110 text-black font-semibold text-xs tracking-normal uppercase rounded-sm transition-all disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {saving ? (
               <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -1618,8 +1618,7 @@ export default function AdminPanel() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [needsPasswordSet, setNeedsPasswordSet] = useState(false);
   const [showCollectionsManager, setShowCollectionsManager] = useState(false);
-  const [showSettingsManager, setShowSettingsManager] = useState(false);
-  const [showAnalyticsDashboard, setShowAnalyticsDashboard] = useState(false);
+  const [adminSubView, setAdminSubView] = useState<"products" | "settings" | "analytics">("products");
   const [activeCategory, setActiveCategory] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -1806,20 +1805,20 @@ export default function AdminPanel() {
               <Lock size={12} className="text-luxury-gold" />
             </div>
             <div>
-              <p className="text-xs font-serif tracking-[0.2em] text-white uppercase group-hover:text-luxury-gold transition-colors">{settings?.site_name || siteConfig.name}</p>
-              <p className="text-[9px] tracking-[0.3em] text-zinc-500 uppercase">Admin Studio</p>
+              <p className="text-xs font-sans tracking-normal text-white uppercase group-hover:text-luxury-gold transition-colors">{settings?.site_name || siteConfig.name}</p>
+              <p className="text-xs tracking-normal text-zinc-500 uppercase">Admin Studio</p>
             </div>
           </Link>
           <div className="flex items-center gap-6">
             <Link
               to="/"
-              className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-luxury-gold transition-colors font-sans font-semibold"
+              className="text-xs font-semibold text-zinc-300 hover:text-luxury-gold transition-colors font-sans"
             >
               View Showroom
             </Link>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-luxury-gold transition-colors"
+              className="flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-luxury-gold transition-colors"
             >
               <LogOut size={13} /> Sign Out
             </button>
@@ -1828,154 +1827,197 @@ export default function AdminPanel() {
       </header>
 
       <div className="max-w-6xl mx-auto px-6 py-12 space-y-10">
-        {/* Category Tabs */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {categories.map((cat) => {
-            const count = categoryCounts[cat.id] ?? 0;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`relative px-6 py-2.5 text-[10px] tracking-[0.25em] uppercase font-sans font-semibold rounded-full transition-all duration-300 ${
-                  activeCategory === cat.id
-                    ? "bg-luxury-gold text-black"
-                    : "bg-white/5 text-zinc-400 hover:text-white border border-white/10"
-                }`}
-              >
-                {cat.label}
-                <span className={`ml-2 text-[9px] ${activeCategory === cat.id ? "text-black/60" : "text-zinc-600"}`}>
-                  ({count})
-                </span>
-              </button>
-            );
-          })}
+        {/* Top Management Toolbar */}
+        <div className="flex items-center justify-between border-b border-white/10 pb-6 gap-4 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={() => setAdminSubView("products")}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-md transition-all ${
+                adminSubView === "products"
+                  ? "bg-luxury-gold text-black shadow-md"
+                  : "bg-white/5 text-zinc-300 hover:text-white border border-white/10"
+              }`}
+            >
+              <Image size={14} /> Catalog Products
+            </button>
+
+            <button
+              onClick={() => setAdminSubView("settings")}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-md transition-all ${
+                adminSubView === "settings"
+                  ? "bg-luxury-gold text-black shadow-md"
+                  : "bg-white/5 text-zinc-300 hover:text-white border border-white/10"
+              }`}
+            >
+              <Edit size={14} /> Update Contact Info
+            </button>
+
+            <button
+              onClick={() => setAdminSubView("analytics")}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-md transition-all ${
+                adminSubView === "analytics"
+                  ? "bg-luxury-gold text-black shadow-md"
+                  : "bg-white/5 text-zinc-300 hover:text-white border border-white/10"
+              }`}
+            >
+              <BarChart3 size={14} /> View Insights
+            </button>
+          </div>
 
           <button
             onClick={() => setShowCollectionsManager(true)}
-            className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] tracking-[0.25em] uppercase font-sans font-semibold rounded-full bg-white/5 border border-luxury-gold/20 text-luxury-gold hover:bg-luxury-gold/5 transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-md bg-white/5 border border-luxury-gold/30 text-luxury-gold hover:bg-luxury-gold/10 transition-all"
           >
-            <Settings size={12} /> Manage Collections
-          </button>
-
-          <button
-            onClick={() => setShowSettingsManager(true)}
-            className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] tracking-[0.25em] uppercase font-sans font-semibold rounded-full bg-white/5 border border-luxury-gold/20 text-luxury-gold hover:bg-luxury-gold/5 transition-all"
-          >
-            <Edit size={12} /> Update Contact Info
-          </button>
-
-          <button
-            onClick={() => setShowAnalyticsDashboard(true)}
-            className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] tracking-[0.25em] uppercase font-sans font-semibold rounded-full bg-white/5 border border-luxury-gold/20 text-luxury-gold hover:bg-luxury-gold/5 transition-all"
-          >
-            <BarChart3 size={12} /> View Insights
+            <Settings size={14} /> Manage Collections
           </button>
         </div>
 
-        {/* Add button row */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-serif font-light tracking-wider text-white uppercase">
-              {categories.find((c) => c.id === activeCategory)?.label} Collection
-            </h2>
-            {isReordering && (
-              <span className="text-[10px] uppercase tracking-widest text-luxury-gold flex items-center gap-1.5 animate-pulse font-sans">
-                <span className="w-1.5 h-1.5 bg-luxury-gold rounded-full animate-ping" /> Saving sequence...
-              </span>
-            )}
+        {/* Category Pills (Only shown when browsing Catalog Products) */}
+        {adminSubView === "products" && (
+          <div className="flex items-center gap-2 flex-wrap pt-1">
+            <span className="text-xs text-zinc-400 font-medium mr-1">Collection:</span>
+            {categories.map((cat) => {
+              const count = categoryCounts[cat.id] ?? 0;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all ${
+                    activeCategory === cat.id
+                      ? "bg-luxury-gold/20 text-luxury-gold border border-luxury-gold/50 shadow-sm"
+                      : "bg-white/5 text-zinc-400 hover:text-white border border-white/10"
+                  }`}
+                >
+                  {cat.label}
+                  <span className={`ml-1.5 text-xs ${activeCategory === cat.id ? "text-luxury-gold/80" : "text-zinc-500"}`}>
+                    ({count})
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          {!showAddForm && (
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-luxury-gold hover:brightness-110 text-black text-[10px] uppercase tracking-widest font-semibold rounded-sm transition-all"
-            >
-              <Plus size={13} /> Add Product
-            </button>
-          )}
-        </div>
+        )}
 
-        {/* Add Form */}
-        <AnimatePresence>
-          {showAddForm && (
-            <AddProductForm
-              onSave={handleAdd}
-              onCancel={() => setShowAddForm(false)}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Product Grid */}
-        <AnimatePresence mode="popLayout">
-          {products.length === 0 && !showAddForm ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="py-20 text-center space-y-4"
-            >
-              <div className="w-16 h-16 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                <Plus size={22} className="text-zinc-600" />
+        {adminSubView === "settings" ? (
+          <SettingsManager
+            settings={settings}
+            onClose={() => setAdminSubView("products")}
+            onRefresh={() => {
+              queryClient.invalidateQueries({ queryKey: ["settings"] });
+            }}
+          />
+        ) : adminSubView === "analytics" ? (
+          <AnalyticsDashboard
+            onClose={() => setAdminSubView("products")}
+          />
+        ) : (
+          <>
+            {/* Add button row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <h2 className="text-lg font-semibold text-white font-sans">
+                  {categories.find((c) => c.id === activeCategory)?.label} Collection
+                </h2>
+                {isReordering && (
+                  <span className="text-xs uppercase tracking-normal text-luxury-gold flex items-center gap-1.5 animate-pulse font-sans">
+                    <span className="w-1.5 h-1.5 bg-luxury-gold rounded-full animate-ping" /> Saving sequence...
+                  </span>
+                )}
               </div>
-              <p className="text-zinc-500 text-sm tracking-wider font-light">No products in this collection yet.</p>
-              <p className="text-zinc-600 text-xs">Click "Add Product" to get started.</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="grid"
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5"
-            >
-              <AnimatePresence>
-                {products.map((product, idx) => (
-                  <div
-                    key={product.id}
-                    draggable
-                    onDragStart={(e) => {
-                      setDraggedIndex(idx);
-                      e.dataTransfer.setData("text/plain", idx.toString());
-                      e.dataTransfer.effectAllowed = "move";
-                    }}
-                    onDragEnd={() => {
-                      setDraggedIndex(null);
-                      setDragOverIndex(null);
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      if (draggedIndex !== idx) {
-                        setDragOverIndex(idx);
-                      }
-                    }}
-                    onDragLeave={() => {
-                      if (dragOverIndex === idx) {
-                        setDragOverIndex(null);
-                      }
-                    }}
-                    onDrop={async (e) => {
-                      e.preventDefault();
-                      const fromIdxStr = e.dataTransfer.getData("text/plain");
-                      if (fromIdxStr === "") return;
-                      const fromIndex = parseInt(fromIdxStr, 10);
-                      if (fromIndex === idx) return;
-                      await handleReorder(fromIndex, idx);
-                    }}
-                    className={`transition-all duration-300 rounded-sm overflow-hidden ${
-                      draggedIndex === idx ? "opacity-30 scale-95 cursor-grabbing" : ""
-                    } ${
-                      dragOverIndex === idx 
-                        ? "border border-luxury-gold ring-1 ring-luxury-gold shadow-[0_0_20px_rgba(197,168,128,0.25)] translate-y-[-2px]" 
-                        : "border border-transparent"
-                    }`}
-                  >
-                    <AdminProductCard
-                      product={product}
-                      onEdit={() => setEditingProduct(product)}
-                      onDelete={() => handleDelete(product.id)}
-                    />
+              {!showAddForm && (
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-luxury-gold hover:brightness-110 text-black text-xs font-semibold rounded-md transition-all"
+                >
+                  <Plus size={13} /> Add Product
+                </button>
+              )}
+            </div>
+
+            {/* Add Form */}
+            <AnimatePresence>
+              {showAddForm && (
+                <AddProductForm
+                  onSave={handleAdd}
+                  onCancel={() => setShowAddForm(false)}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Product Grid */}
+            <AnimatePresence mode="popLayout">
+              {products.length === 0 && !showAddForm ? (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="py-20 text-center space-y-4"
+                >
+                  <div className="w-16 h-16 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                    <Plus size={22} className="text-zinc-600" />
                   </div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  <p className="text-zinc-500 text-sm tracking-normal font-light">No products in this collection yet.</p>
+                  <p className="text-zinc-600 text-xs">Click "Add Product" to get started.</p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="grid"
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5"
+                >
+                  <AnimatePresence>
+                    {products.map((product, idx) => (
+                      <div
+                        key={product.id}
+                        draggable
+                        onDragStart={(e) => {
+                          setDraggedIndex(idx);
+                          e.dataTransfer.setData("text/plain", idx.toString());
+                          e.dataTransfer.effectAllowed = "move";
+                        }}
+                        onDragEnd={() => {
+                          setDraggedIndex(null);
+                          setDragOverIndex(null);
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          if (draggedIndex !== idx) {
+                            setDragOverIndex(idx);
+                          }
+                        }}
+                        onDragLeave={() => {
+                          if (dragOverIndex === idx) {
+                            setDragOverIndex(null);
+                          }
+                        }}
+                        onDrop={async (e) => {
+                          e.preventDefault();
+                          const fromIdxStr = e.dataTransfer.getData("text/plain");
+                          if (fromIdxStr === "") return;
+                          const fromIndex = parseInt(fromIdxStr, 10);
+                          if (fromIndex === idx) return;
+                          await handleReorder(fromIndex, idx);
+                        }}
+                        className={`transition-all duration-300 rounded-sm overflow-hidden ${
+                          draggedIndex === idx ? "opacity-30 scale-95 cursor-grabbing" : ""
+                        } ${
+                          dragOverIndex === idx 
+                            ? "border border-luxury-gold ring-1 ring-luxury-gold shadow-[0_0_20px_rgba(197,168,128,0.25)] translate-y-[-2px]" 
+                            : "border border-transparent"
+                        }`}
+                      >
+                        <AdminProductCard
+                          product={product}
+                          onEdit={() => setEditingProduct(product)}
+                          onDelete={() => handleDelete(product.id)}
+                        />
+                      </div>
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
       </div>
 
       {/* Edit Product Modal Overlay */}
@@ -1999,26 +2041,6 @@ export default function AdminPanel() {
             onRefresh={() => {
               queryClient.invalidateQueries({ queryKey: ["collections"] });
             }}
-          />
-        )}
-      </AnimatePresence>
-      {/* Settings/Contact Manager Modal Overlay */}
-      <AnimatePresence>
-        {showSettingsManager && (
-          <SettingsManagerModal
-            settings={settings}
-            onClose={() => setShowSettingsManager(false)}
-            onRefresh={() => {
-              queryClient.invalidateQueries({ queryKey: ["settings"] });
-            }}
-          />
-        )}
-      </AnimatePresence>
-      {/* Analytics Insights Dashboard Modal Overlay */}
-      <AnimatePresence>
-        {showAnalyticsDashboard && (
-          <AnalyticsDashboardModal
-            onClose={() => setShowAnalyticsDashboard(false)}
           />
         )}
       </AnimatePresence>
