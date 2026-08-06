@@ -300,6 +300,48 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'analytics_events' AND policyname = 'Allow public select') THEN
         CREATE POLICY "Allow public select" ON analytics_events FOR SELECT TO public USING (true);
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'analytics_events' AND policyname = 'Allow public update') THEN
+        CREATE POLICY "Allow public update" ON analytics_events FOR UPDATE TO public USING (true) WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'analytics_events' AND policyname = 'Allow public delete') THEN
+        CREATE POLICY "Allow public delete" ON analytics_events FOR DELETE TO public USING (true);
+    END IF;
 END
 $$;
+
+-- Setup WRITE policies for gallery, testimonials, services tables
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'gallery' AND policyname = 'Allow public insert') THEN
+        CREATE POLICY "Allow public insert" ON gallery FOR INSERT TO public WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'gallery' AND policyname = 'Allow public update') THEN
+        CREATE POLICY "Allow public update" ON gallery FOR UPDATE TO public USING (true) WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'gallery' AND policyname = 'Allow public delete') THEN
+        CREATE POLICY "Allow public delete" ON gallery FOR DELETE TO public USING (true);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'testimonials' AND policyname = 'Allow public insert') THEN
+        CREATE POLICY "Allow public insert" ON testimonials FOR INSERT TO public WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'testimonials' AND policyname = 'Allow public update') THEN
+        CREATE POLICY "Allow public update" ON testimonials FOR UPDATE TO public USING (true) WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'testimonials' AND policyname = 'Allow public delete') THEN
+        CREATE POLICY "Allow public delete" ON testimonials FOR DELETE TO public USING (true);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'services' AND policyname = 'Allow public insert') THEN
+        CREATE POLICY "Allow public insert" ON services FOR INSERT TO public WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'services' AND policyname = 'Allow public update') THEN
+        CREATE POLICY "Allow public update" ON services FOR UPDATE TO public USING (true) WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'services' AND policyname = 'Allow public delete') THEN
+        CREATE POLICY "Allow public delete" ON services FOR DELETE TO public USING (true);
+    END IF;
+END
+$$;
+
 

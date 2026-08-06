@@ -351,52 +351,87 @@ export async function uploadProductMedia(file: File, categoryId: string): Promis
   return data.publicUrl;
 }
 
+function getDefaultCategoryProducts(categoryId: string): Product[] {
+  const imgUrl = imageConfig.collections[categoryId as keyof typeof imageConfig.collections] || imageConfig.heroImages.teaserHero;
+  const colInfo = collectionsConfig.find(c => c.id === categoryId);
+  const title = colInfo ? colInfo.title : "Exclusive Curation";
+  const subtitle = colInfo ? colInfo.description : "Handcrafted with premium materials";
+
+  return [
+    {
+      id: `${categoryId}-default-1`,
+      title: `${title} — Signature Curation`,
+      subtitle: subtitle,
+      heroMedia: { type: "image", url: imgUrl },
+      media: [
+        {
+          type: "image",
+          url: imgUrl,
+          thumbnail: imgUrl,
+          subtitle: subtitle,
+        }
+      ]
+    }
+  ];
+}
+
 export async function getProducts(categoryId: string): Promise<Product[]> {
-  if (!supabase) {
-    console.warn(`[DB Service] Supabase not initialized. Cannot fetch products for "${categoryId}".`);
-    return [];
-  }
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("category_id", categoryId)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false });
 
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("category_id", categoryId)
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: false });
+      if (!error && data && data.length > 0) {
+        return data.map((row) => {
+          const dbMedia = Array.isArray(row.media) && row.media.length > 0 ? row.media : null;
+          const mediaItems: MediaItem[] = dbMedia ? dbMedia.map((m: any) => ({
+            type: m.type || "image",
+            url: m.url,
+            thumbnail: m.thumbnail || (m.type === "video" ? "/images/brand-logo.png" : m.url),
+            subtitle: m.subtitle || "",
+            focalPoint: m.focalPoint,
+          })) : [
+            {
+              type: row.media_type as "image" | "video",
+              url: row.url,
+              thumbnail: row.thumbnail || (row.media_type === "video" ? "/images/brand-logo.png" : row.url),
+              subtitle: row.subtitle || "",
+            }
+          ];
 
-  if (error) {
-    console.error(`[DB Service] Error fetching products for "${categoryId}":`, error);
-    throw error;
-  }
-
-  return (data || []).map((row) => {
-    const dbMedia = Array.isArray(row.media) && row.media.length > 0 ? row.media : null;
-    const mediaItems: MediaItem[] = dbMedia ? dbMedia.map((m: any) => ({
-      type: m.type || "image",
-      url: m.url,
-      thumbnail: m.thumbnail || (m.type === "video" ? "/images/brand-logo.png" : m.url),
-      subtitle: m.subtitle || "",
-      focalPoint: m.focalPoint,
-    })) : [
-      {
-        type: row.media_type as "image" | "video",
-        url: row.url,
-        thumbnail: row.thumbnail || (row.media_type === "video" ? "/images/brand-logo.png" : row.url),
-        subtitle: row.subtitle || "",
+          return {
+            id: row.id,
+            title: row.title,
+            subtitle: row.subtitle || "",
+            heroMedia: { 
+              type: (mediaItems[0]?.type || row.media_type) as "image" | "video", 
+              url: mediaItems[0]?.url || row.url 
+            },
+            media: mediaItems,
+          };
+        });
       }
-    ];
+    }
+  } catch (err) {
+    console.warn(`[DB Service] Error fetching products for "${categoryId}" from Supabase:`, err);
+  }
 
-    return {
-      id: row.id,
-      title: row.title,
-      subtitle: row.subtitle || "",
-      heroMedia: { 
-        type: (mediaItems[0]?.type || row.media_type) as "image" | "video", 
-        url: mediaItems[0]?.url || row.url 
-      },
-      media: mediaItems,
-    };
-  });
+  // Local storage backup check
+  try {
+    const raw = localStorage.getItem(`fashionking_products_${categoryId}`);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch {}
+
+  return getDefaultCategoryProducts(categoryId);
 }
 
 export async function createProduct(
