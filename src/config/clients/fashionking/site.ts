@@ -1,12 +1,12 @@
 export const siteConfig = {
   name: "FASHION KING",
-  subName: "Cloths & Tailoring",
-  tagline: "Suit & Sherwani Specialist, Tailoring & Fabrics Exclusive",
-  description: "Step into the ultimate destination for premium custom tailoring in Beed. We specialize in crafting masterfully fit suits, majestic royal sherwanis, signature kurtas, and curating the finest fabrics.",
-  seoTitle: "Fashion King | Suit & Sherwani Specialist Beed | Custom Tailoring",
-  seoDescription: "Fashion King in Beed offers exclusive custom tailoring and premium fabrics. Specialized in bespoke wedding sherwanis, groom suits, designer kurtas, and imported suiting materials.",
-  ogTitle: "Fashion King | Bespoke Suit & Sherwani Tailor Beed",
-  ogDescription: "Exquisite hand-tailored traditional sherwanis, jodhpuri suits, and blazer materials.",
+  subName: "Men's Tailoring & Fabrics",
+  tagline: "Suit & Sherwani Specialist, Tailoring & Fabrics Exclusive — Syed Siddik",
+  description: "Fashion King by Syed Siddik is your premier destination for men's tailoring and exclusive fabrics in Beed. Suit & sherwani specialist, handcrafted for perfection.",
+  seoTitle: "Fashion King | Men's Tailoring & Fabrics | Syed Siddik",
+  seoDescription: "Fashion King by Syed Siddik — Suit & sherwani specialist, tailoring & fabrics exclusive. Address: Takiya masjid road, Shahinsha nagar, Beed - 431122, Maharashtra. WhatsApp: +91 9960434588.",
+  ogTitle: "Fashion King — Men's Tailoring & Fabrics",
+  ogDescription: "Suit & sherwani specialist, tailoring & fabrics exclusive by Syed Siddik. Address: Takiya masjid road, Shahinsha nagar, Beed - 431122, Maharashtra. WhatsApp: +91 9960434588.",
   foundedYear: 1999,
   
   // About Page details

@@ -4,9 +4,9 @@ export const siteConfig = {
   tagline: "Ladies Suits, Dress Materials, Sarees & Burqas",
   description: "Step into Seema Sarees, your premier destination for the finest ladies suits, designer dress materials, exclusive sarees, and custom-tailored burqas/abayas in Beed, Maharashtra.",
   seoTitle: "Seema Sarees Beed | Wholesale & Retail Sarees & Ladies Suits",
-  seoDescription: "Discover an exquisite collection of ladies suits, fancy dress materials, designer sarees, and premium burqas at Seema Saree Center in Beed. Premium fabrics, wholesale rates, and retail excellence.",
+  seoDescription: "Discover an exquisite collection of ladies suits, fancy dress materials, designer sarees, and premium burqas at Seema Saree Center in Beed. Wholesale & retail. Address: Seema saree center, Karanja Rd, Bir, Beed, Maharashtra 431122. Phone: +91 89837 91615.",
   ogTitle: "Seema Sarees Beed | Premium Sarees & Dress Materials",
-  ogDescription: "Stunning traditional sarees, designer suits, unstitched dress materials, and elegant burqas at Seema Saree Center.",
+  ogDescription: "Stunning traditional sarees, designer suits, unstitched dress materials, and elegant burqas at Seema Saree Center. Address: Seema saree center, Karanja Rd, Bir, Beed, Maharashtra 431122. Phone: +91 89837 91615.",
   foundedYear: 2005,
 
   // About Page details

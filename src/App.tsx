@@ -43,8 +43,6 @@ export default function App() {
 
   useEffect(() => {
     if (!settings) return;
-    
-    // 2. Dynamic SEO Injection: Update meta headers from database/fallback settings
     document.title = settings.seo_title;
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
