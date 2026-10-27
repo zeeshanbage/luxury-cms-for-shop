@@ -1,253 +1,126 @@
 import { supabase } from "./supabase";
-import { siteConfig } from "@/config/site";
-import { contactConfig } from "@/config/contact";
-import { socialConfig } from "@/config/social";
-import { collectionsConfig } from "@/config/collections";
-import { imageConfig } from "@/config/images";
 import type { DbSettings, DbCollection, DbGallery, DbTestimonial, DbService, Product, MediaItem } from "@/types/db";
 
 // 1. SETTINGS SERVICE
 export async function getSettings(): Promise<DbSettings> {
-  try {
-    if (!supabase) throw new Error("Supabase client not initialized");
-    
-    const { data, error } = await supabase
-      .from("settings")
-      .select("*")
-      .order("id", { ascending: true })
-      .limit(1)
-      .maybeSingle();
- 
-    if (error) throw error;
-    if (!data) throw new Error("No settings record found in database");
-    
-    return data as DbSettings;
-  } catch (err) {
-    console.warn("[DB Service] getSettings failed. Falling back to local configuration files.", err);
-    try {
-      const mock = localStorage.getItem("fashionking_mock_settings");
-      if (mock) {
-        const parsed = JSON.parse(mock);
-        return {
-          site_name: parsed.site_name || siteConfig.name,
-          site_sub_name: parsed.site_sub_name || siteConfig.subName,
-          site_tagline: parsed.site_tagline || siteConfig.tagline,
-          site_description: parsed.site_description || siteConfig.description,
-          seo_title: parsed.seo_title || siteConfig.seoTitle,
-          seo_description: parsed.seo_description || siteConfig.seoDescription,
-          og_title: parsed.og_title || siteConfig.ogTitle,
-          og_description: parsed.og_description || siteConfig.ogDescription,
-          founded_year: parsed.founded_year || siteConfig.foundedYear,
-          phone: parsed.phone || contactConfig.phone,
-          phone_formatted: parsed.phone_formatted || contactConfig.phoneFormatted,
-          email: parsed.email || contactConfig.email,
-          address: parsed.address || contactConfig.address,
-          maps_link: parsed.maps_link || contactConfig.mapsLink,
-          about_title: parsed.about_title || siteConfig.philosophy.title,
-          about_header: parsed.about_header || siteConfig.philosophy.header,
-          about_accent_word: parsed.about_accent_word || siteConfig.philosophy.accentWord,
-          about_subtitle: parsed.about_subtitle || siteConfig.philosophy.subTitle,
-          about_intro: parsed.about_intro || siteConfig.philosophy.intro,
-          about_paragraph1: parsed.about_paragraph1 || siteConfig.philosophy.paragraph1,
-          about_paragraph2: parsed.about_paragraph2 || siteConfig.philosophy.paragraph2,
-          business_hours: parsed.business_hours || contactConfig.businessHours,
-          socials: parsed.socials || socialConfig,
-          pillars: parsed.pillars || siteConfig.pillars,
-          teaser_features: parsed.teaser_features || siteConfig.teaserFeatures,
-        };
-      }
-    } catch {}
-    return {
-      site_name: siteConfig.name,
-      site_sub_name: siteConfig.subName,
-      site_tagline: siteConfig.tagline,
-      site_description: siteConfig.description,
-      seo_title: siteConfig.seoTitle,
-      seo_description: siteConfig.seoDescription,
-      og_title: siteConfig.ogTitle,
-      og_description: siteConfig.ogDescription,
-      founded_year: siteConfig.foundedYear,
-      phone: contactConfig.phone,
-      phone_formatted: contactConfig.phoneFormatted,
-      email: contactConfig.email,
-      address: contactConfig.address,
-      maps_link: contactConfig.mapsLink,
-      about_title: siteConfig.philosophy.title,
-      about_header: siteConfig.philosophy.header,
-      about_accent_word: siteConfig.philosophy.accentWord,
-      about_subtitle: siteConfig.philosophy.subTitle,
-      about_intro: siteConfig.philosophy.intro,
-      about_paragraph1: siteConfig.philosophy.paragraph1,
-      about_paragraph2: siteConfig.philosophy.paragraph2,
-      business_hours: contactConfig.businessHours,
-      socials: socialConfig,
-      pillars: siteConfig.pillars,
-      teaser_features: siteConfig.teaserFeatures,
-    };
-  }
+  if (!supabase) throw new Error("Database is down: Supabase client is not configured.");
+  
+  const { data, error } = await supabase
+    .from("settings")
+    .select("*")
+    .order("id", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw new Error(`Database is down: ${error.message || "Failed to fetch settings"}`);
+  if (!data) throw new Error("Database is down: No settings record found in database");
+  
+  return data as DbSettings;
 }
 
 export async function updateSettings(updates: Partial<DbSettings>): Promise<DbSettings> {
-  if (supabase) {
-    const { data: records, error: fetchError } = await supabase
+  if (!supabase) throw new Error("Database is down: Supabase client is not configured.");
+
+  const { data: records, error: fetchError } = await supabase
+    .from("settings")
+    .select("id")
+    .limit(1);
+  
+  if (fetchError) throw fetchError;
+  const settingsId = records?.[0]?.id;
+  
+  if (!settingsId) {
+    const { data, error } = await supabase
       .from("settings")
-      .select("id")
-      .limit(1);
+      .insert([updates])
+      .select("*");
     
-    if (fetchError) throw fetchError;
-    const settingsId = records?.[0]?.id;
-    
-    if (!settingsId) {
-      const { data, error } = await supabase
-        .from("settings")
-        .insert([updates])
-        .select("*");
-      
-      if (error) throw error;
-      const created = data?.[0];
-      if (!created) {
-        throw new Error(
-          "Settings insert failed — no rows returned. " +
-          "This is usually caused by a missing INSERT Row Level Security (RLS) policy on your Supabase 'settings' table."
-        );
-      }
-      return created as DbSettings;
-    } else {
-      const { data, error } = await supabase
-        .from("settings")
-        .update(updates)
-        .eq("id", settingsId)
-        .select("*");
-      
-      if (error) throw error;
-      const updated = data?.[0];
-      if (!updated) {
-        throw new Error(
-          "Settings update failed — no rows were modified. " +
-          "This is usually caused by a missing UPDATE Row Level Security (RLS) policy on your Supabase 'settings' table."
-        );
-      }
-      return updated as DbSettings;
+    if (error) throw error;
+    const created = data?.[0];
+    if (!created) {
+      throw new Error(
+        "Settings insert failed — no rows returned. " +
+        "This is usually caused by a missing INSERT Row Level Security (RLS) policy on your Supabase 'settings' table."
+      );
     }
+    return created as DbSettings;
   } else {
-    const current = localStorage.getItem("fashionking_mock_settings");
-    const currentObj = current ? JSON.parse(current) : {};
-    const updated = { ...currentObj, ...updates };
-    localStorage.setItem("fashionking_mock_settings", JSON.stringify(updated));
+    const { data, error } = await supabase
+      .from("settings")
+      .update(updates)
+      .eq("id", settingsId)
+      .select("*");
+    
+    if (error) throw error;
+    const updated = data?.[0];
+    if (!updated) {
+      throw new Error(
+        "Settings update failed — no rows were modified. " +
+        "This is usually caused by a missing UPDATE Row Level Security (RLS) policy on your Supabase 'settings' table."
+      );
+    }
     return updated as DbSettings;
   }
 }
 
 // 2. COLLECTIONS SERVICE
 export async function getCollections(): Promise<DbCollection[]> {
-  try {
-    if (!supabase) throw new Error("Supabase client not initialized");
+  if (!supabase) throw new Error("Database is down: Supabase client is not configured.");
 
-    const { data, error } = await supabase
-      .from("collections")
-      .select("*")
-      .order("sort_order", { ascending: true });
+  const { data, error } = await supabase
+    .from("collections")
+    .select("*")
+    .order("sort_order", { ascending: true });
 
-    if (error) throw error;
-    if (!data || data.length === 0) throw new Error("No collections records found");
+  if (error) throw new Error(`Database is down: ${error.message || "Failed to fetch collections"}`);
+  if (!data || data.length === 0) throw new Error("Database is down: No collections records found");
 
-    return data as DbCollection[];
-  } catch (err) {
-    console.warn("[DB Service] getCollections failed. Falling back to local collectionsConfig.", err);
-    return collectionsConfig.map((item) => ({
-      id: item.id,
-      title: item.title,
-      price: item.price,
-      description: item.description,
-      icon: item.icon,
-      features: item.features,
-      image_url: imageConfig.collections[item.id as keyof typeof imageConfig.collections] || imageConfig.heroImages.teaserHero
-    }));
-  }
+  return data as DbCollection[];
 }
 
 // 3. GALLERY SERVICE
 export async function getGallery(): Promise<DbGallery[]> {
-  try {
-    if (!supabase) throw new Error("Supabase client not initialized");
+  if (!supabase) throw new Error("Database is down: Supabase client is not configured.");
 
-    const { data, error } = await supabase
-      .from("gallery")
-      .select("*")
-      .order("sort_order", { ascending: true });
+  const { data, error } = await supabase
+    .from("gallery")
+    .select("*")
+    .order("sort_order", { ascending: true });
 
-    if (error) throw error;
-    if (!data || data.length === 0) throw new Error("No gallery records found");
+  if (error) throw new Error(`Database is down: ${error.message || "Failed to fetch gallery"}`);
+  if (!data || data.length === 0) throw new Error("Database is down: No gallery records found");
 
-    return data as DbGallery[];
-  } catch (err) {
-    console.warn("[DB Service] getGallery failed. Falling back to local imageConfig.workGallery.", err);
-    return imageConfig.workGallery.map((item) => ({
-      id: item.id,
-      url: item.url,
-      alt: item.alt,
-    }));
-  }
+  return data as DbGallery[];
 }
 
 // 4. TESTIMONIALS SERVICE
 export async function getTestimonials(): Promise<DbTestimonial[]> {
-  try {
-    if (!supabase) throw new Error("Supabase client not initialized");
+  if (!supabase) throw new Error("Database is down: Supabase client is not configured.");
 
-    const { data, error } = await supabase
-      .from("testimonials")
-      .select("*")
-      .order("sort_order", { ascending: true });
+  const { data, error } = await supabase
+    .from("testimonials")
+    .select("*")
+    .order("sort_order", { ascending: true });
 
-    if (error) throw error;
-    if (!data || data.length === 0) throw new Error("No testimonials records found");
+  if (error) throw new Error(`Database is down: ${error.message || "Failed to fetch testimonials"}`);
+  if (!data || data.length === 0) throw new Error("Database is down: No testimonials records found");
 
-    return data as DbTestimonial[];
-  } catch (err) {
-    console.warn("[DB Service] getTestimonials failed. Falling back to local testimonials fallback mock.", err);
-    return (imageConfig.testimonials as any[]).map((item, idx) => ({
-      id: idx + 1,
-      client_name: item.clientName,
-      client_image: item.clientImage,
-      review_text: item.reviewText || "The quality of fabrics and curation was absolutely flawless. Very satisfied with my purchase.",
-      rating: 5,
-      sort_order: 10,
-    }));
-  }
+  return data as DbTestimonial[];
 }
 
 // 5. SERVICES SERVICE
 export async function getServices(): Promise<DbService[]> {
-  try {
-    if (!supabase) throw new Error("Supabase client not initialized");
+  if (!supabase) throw new Error("Database is down: Supabase client is not configured.");
 
-    const { data, error } = await supabase
-      .from("services")
-      .select("*")
-      .order("sort_order", { ascending: true });
+  const { data, error } = await supabase
+    .from("services")
+    .select("*")
+    .order("sort_order", { ascending: true });
 
-    if (error) throw error;
-    if (!data || data.length === 0) throw new Error("No services records found");
+  if (error) throw new Error(`Database is down: ${error.message || "Failed to fetch services"}`);
+  if (!data || data.length === 0) throw new Error("Database is down: No services records found");
 
-    return data as DbService[];
-  } catch (err) {
-    console.warn("[DB Service] getServices failed. Falling back to local custom services mock.", err);
-    return [
-      {
-        id: "visiting-tailor",
-        title: "Visiting Tailor Service",
-        price: "On Demand",
-        description: "A private fitting consultant travels directly to your residence or hotel in Beed district to measure and consult on wedding packages.",
-        icon: "Users",
-        features: [
-          "Private measuring session at your home",
-          "Complete fabric swatches brought to you",
-          "Saves time for busy grooms"
-        ]
-      }
-    ];
-  }
+  return data as DbService[];
 }
 
 function compressImage(file: File, maxSizeMB: number = 5): Promise<File> {
@@ -351,87 +224,47 @@ export async function uploadProductMedia(file: File, categoryId: string): Promis
   return data.publicUrl;
 }
 
-function getDefaultCategoryProducts(categoryId: string): Product[] {
-  const imgUrl = imageConfig.collections[categoryId as keyof typeof imageConfig.collections] || imageConfig.heroImages.teaserHero;
-  const colInfo = collectionsConfig.find(c => c.id === categoryId);
-  const title = colInfo ? colInfo.title : "Exclusive Curation";
-  const subtitle = colInfo ? colInfo.description : "Handcrafted with premium materials";
-
-  return [
-    {
-      id: `${categoryId}-default-1`,
-      title: `${title} — Signature Curation`,
-      subtitle: subtitle,
-      heroMedia: { type: "image", url: imgUrl },
-      media: [
-        {
-          type: "image",
-          url: imgUrl,
-          thumbnail: imgUrl,
-          subtitle: subtitle,
-        }
-      ]
-    }
-  ];
-}
-
 export async function getProducts(categoryId: string): Promise<Product[]> {
-  try {
-    if (supabase) {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("category_id", categoryId)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false });
+  if (!supabase) throw new Error("Database is down: Supabase client is not configured.");
 
-      if (!error && data && data.length > 0) {
-        return data.map((row) => {
-          const dbMedia = Array.isArray(row.media) && row.media.length > 0 ? row.media : null;
-          const mediaItems: MediaItem[] = dbMedia ? dbMedia.map((m: any) => ({
-            type: m.type || "image",
-            url: m.url,
-            thumbnail: m.thumbnail || (m.type === "video" ? "/images/brand-logo.png" : m.url),
-            subtitle: m.subtitle || "",
-            focalPoint: m.focalPoint,
-          })) : [
-            {
-              type: row.media_type as "image" | "video",
-              url: row.url,
-              thumbnail: row.thumbnail || (row.media_type === "video" ? "/images/brand-logo.png" : row.url),
-              subtitle: row.subtitle || "",
-            }
-          ];
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("category_id", categoryId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
 
-          return {
-            id: row.id,
-            title: row.title,
-            subtitle: row.subtitle || "",
-            heroMedia: { 
-              type: (mediaItems[0]?.type || row.media_type) as "image" | "video", 
-              url: mediaItems[0]?.url || row.url 
-            },
-            media: mediaItems,
-          };
-        });
+  if (error) throw new Error(`Database is down: ${error.message || "Failed to fetch products"}`);
+  if (!data) throw new Error(`Database is down: No products returned for category "${categoryId}"`);
+
+  return data.map((row) => {
+    const dbMedia = Array.isArray(row.media) && row.media.length > 0 ? row.media : null;
+    const mediaItems: MediaItem[] = dbMedia ? dbMedia.map((m: any) => ({
+      type: m.type || "image",
+      url: m.url,
+      thumbnail: m.thumbnail || (m.type === "video" ? "/images/brand-logo.png" : m.url),
+      subtitle: m.subtitle || "",
+      focalPoint: m.focalPoint,
+    })) : [
+      {
+        type: row.media_type as "image" | "video",
+        url: row.url,
+        thumbnail: row.thumbnail || (row.media_type === "video" ? "/images/brand-logo.png" : row.url),
+        subtitle: row.subtitle || "",
       }
-    }
-  } catch (err) {
-    console.warn(`[DB Service] Error fetching products for "${categoryId}" from Supabase:`, err);
-  }
+    ];
 
-  // Local storage backup check
-  try {
-    const raw = localStorage.getItem(`fashionking_products_${categoryId}`);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    }
-  } catch {}
-
-  return getDefaultCategoryProducts(categoryId);
+    return {
+      id: row.id,
+      title: row.title,
+      subtitle: row.subtitle || "",
+      heroMedia: { 
+        type: (mediaItems[0]?.type || row.media_type) as "image" | "video", 
+        url: mediaItems[0]?.url || row.url 
+      },
+      media: mediaItems,
+    };
+  });
 }
 
 export async function createProduct(
@@ -700,42 +533,3 @@ export async function updateCollectionsOrder(orderedIds: string[]): Promise<void
   const error = results.find(r => r.error)?.error;
   if (error) throw error;
 }
-
-export async function getAnalyticsEvents(): Promise<any[]> {
-  try {
-    if (supabase) {
-      const { data, error } = await supabase
-        .from("analytics_events")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data || [];
-    } else {
-      const raw = localStorage.getItem("fashionking_analytics_events");
-      return raw ? JSON.parse(raw) : [];
-    }
-  } catch (err) {
-    console.warn("Failed fetching analytics events:", err);
-    const raw = localStorage.getItem("fashionking_analytics_events");
-    return raw ? JSON.parse(raw) : [];
-  }
-}
-
-export async function clearAnalyticsEvents(): Promise<void> {
-  try {
-    if (supabase) {
-      const { error } = await supabase
-        .from("analytics_events")
-        .delete()
-        .neq("id", -1);
-      if (error) throw error;
-    } else {
-      localStorage.removeItem("fashionking_analytics_events");
-    }
-  } catch (err) {
-    console.warn("Failed clearing analytics events:", err);
-    localStorage.removeItem("fashionking_analytics_events");
-  }
-}
-
-

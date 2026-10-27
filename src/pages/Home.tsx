@@ -8,12 +8,13 @@ import {
   useSpring,
   useInView
 } from "framer-motion";
-import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight, Maximize, Minimize } from "lucide-react";
+import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight, Maximize, Minimize, Phone } from "lucide-react";
 import { getImageUrl } from "@/utils/image";
 import { useSettings, useProducts, useCollections } from "@/hooks/useDbQueries";
-import { analyticsService } from "@/services/analytics";
 import { siteConfig } from "@/config/site";
 import { imageConfig } from "@/config/images";
+import { contactConfig } from "@/config/contact";
+import { DatabaseDown } from "@/components/ui/DatabaseDown";
 import type { Product } from "@/types/db";
 
 // Fullscreen Immersive Lightbox Media Viewer
@@ -525,9 +526,26 @@ function ProductCampaign({
 }
 
 export default function Home() {
-  const { data: settings, isLoading: isSettingsLoading } = useSettings();
-  const { data: collections = [], isLoading: isCollectionsLoading } = useCollections();
+  const { 
+    data: settings, 
+    isLoading: isSettingsLoading, 
+    isError: isSettingsError, 
+    error: settingsError, 
+    refetch: refetchSettings 
+  } = useSettings();
+
+  const { 
+    data: collections = [], 
+    isLoading: isCollectionsLoading, 
+    isError: isCollectionsError, 
+    error: collectionsError, 
+    refetch: refetchCollections 
+  } = useCollections();
+
   const [activeCategory, setActiveCategory] = useState<string>("");
+
+  const phone = settings?.phone || contactConfig.phone;
+  const phoneFormatted = settings?.phone_formatted || contactConfig.phoneFormatted;
 
   // Set the first loaded collection as active category
   useEffect(() => {
@@ -535,18 +553,6 @@ export default function Home() {
       setActiveCategory(collections[0].id);
     }
   }, [collections, activeCategory]);
-
-  // Track page visit on mount
-  useEffect(() => {
-    analyticsService.trackPageVisit("Home");
-  }, []);
-
-  // Track category selection switches
-  useEffect(() => {
-    if (activeCategory) {
-      analyticsService.trackCategoryView(activeCategory);
-    }
-  }, [activeCategory]);
 
   // Lightbox view state manager
   const [lightboxActiveProduct, setLightboxActiveProduct] = useState<Product | null>(null);
@@ -584,7 +590,28 @@ export default function Home() {
   };
 
   // 5. Query dynamic products directly from Supabase (single source of truth)
-  const { data: dbProducts = [], isLoading: isProductsLoading } = useProducts(activeCategory);
+  const { 
+    data: dbProducts = [], 
+    isLoading: isProductsLoading, 
+    isError: isProductsError, 
+    error: productsError, 
+    refetch: refetchProducts 
+  } = useProducts(activeCategory);
+
+  // If database is down or unreachable, immediately present DatabaseDown screen
+  if (isSettingsError || isCollectionsError || (isProductsError && activeCategory)) {
+    const activeError = (settingsError || collectionsError || productsError) as Error;
+    return (
+      <DatabaseDown
+        error={activeError}
+        onRetry={() => {
+          refetchSettings();
+          refetchCollections();
+          if (activeCategory) refetchProducts();
+        }}
+      />
+    );
+  }
 
   const loadedItems = dbProducts.map((item, idx) => ({
     ...item,
@@ -663,10 +690,31 @@ export default function Home() {
           <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black via-black/5 to-transparent pointer-events-none" />
         </div>
 
+        {/* Signboard Top-Right Callable Phone Pill (replacing the static signboard image number with a live, callable luxury pill) */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="absolute top-4 right-4 sm:top-6 sm:right-8 md:top-8 md:right-10 z-20 pointer-events-auto"
+        >
+          <a
+            href={`tel:${phone}`}
+            aria-label={`Call ${phoneFormatted}`}
+            className="group inline-flex items-center space-x-2 sm:space-x-2.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-luxury-gold/60 hover:border-luxury-gold bg-black/85 hover:bg-luxury-gold text-white hover:text-black backdrop-blur-md transition-all duration-300 shadow-[0_4px_16px_rgba(0,0,0,0.8),0_0_15px_rgba(197,168,128,0.25)] hover:shadow-[0_0_25px_rgba(197,168,128,0.6)] cursor-pointer"
+          >
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-luxury-gold/20 text-luxury-gold group-hover:bg-black group-hover:text-luxury-gold transition-colors duration-300">
+              <Phone size={11} className="transition-transform group-hover:scale-110" />
+            </span>
+            <span className="font-sans font-semibold text-[11px] sm:text-xs md:text-sm tracking-widest text-zinc-100 group-hover:text-black transition-colors duration-300">
+              {phoneFormatted}
+            </span>
+          </a>
+        </motion.div>
+
         {/* Bottom overlay container for text content & explore button (75% down, copiable text) */}
-        <div className="absolute bottom-[8vh] md:bottom-[10vh] z-10 flex flex-col items-center text-center space-y-6 max-w-2xl w-full px-6 justify-center pointer-events-auto">
+        <div className="absolute bottom-[6vh] md:bottom-[8vh] z-10 flex flex-col items-center text-center space-y-5 max-w-2xl w-full px-6 justify-center pointer-events-auto">
           
-          <div className="space-y-3">
+          <div className="space-y-2">
             <motion.p
               initial={{ y: 15, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -688,18 +736,25 @@ export default function Home() {
             </motion.p>
           </div>
 
+          {/* Action CTAs: Direct Call & Explore Lookbook */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="pt-2"
+            className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto"
           >
+            <a
+              href={`tel:${phone}`}
+              className="w-full sm:w-auto group inline-flex items-center justify-center space-x-2.5 px-7 py-4 bg-luxury-gold hover:bg-[#d8be96] text-black text-xs tracking-widest uppercase font-semibold font-sans rounded-sm transition-all duration-300 shadow-luxury-glow hover:scale-[1.02]"
+            >
+              <Phone size={14} className="fill-black transition-transform group-hover:scale-110" />
+              <span>Call: {phoneFormatted}</span>
+            </a>
+
             <button
-              onClick={() => {
-                analyticsService.trackLeadClick("explore_lookbook_hero");
-                scrollToCampaignGallery();
+              onClick={() => {                scrollToCampaignGallery();
               }}
-              className="group/btn inline-flex items-center space-x-3 px-8 py-4 bg-white hover:bg-luxury-gold text-black text-xs tracking-widest uppercase font-semibold font-sans rounded-sm transition-all duration-300 shadow-luxury-glow"
+              className="w-full sm:w-auto group/btn inline-flex items-center justify-center space-x-3 px-7 py-4 bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 hover:border-white text-xs tracking-widest uppercase font-semibold font-sans rounded-sm transition-all duration-300 backdrop-blur-sm"
             >
               <span>Explore Lookbook</span>
               <ArrowDown size={14} className="transform transition-transform duration-300 group-hover/btn:translate-y-1 animate-bounce" />
@@ -783,9 +838,7 @@ export default function Home() {
                   key={item.uniqueId}
                   item={item}
                   index={index}
-                  onOpenLightbox={(initialMediaIdx) => {
-                    analyticsService.trackProductClick(item.id, item.title);
-                    setLightboxActiveProduct(item);
+                  onOpenLightbox={(initialMediaIdx) => {                    setLightboxActiveProduct(item);
                     setLightboxInitialIndex(initialMediaIdx);
                   }}
                 />

@@ -1,10 +1,9 @@
-import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Compass, Phone, Mail, MapPin } from "lucide-react";
 import { useSettings } from "@/hooks/useDbQueries";
-import { analyticsService } from "@/services/analytics";
 import { contactConfig } from "@/config/contact";
 import { socialConfig } from "@/config/social";
+import { DatabaseDown } from "@/components/ui/DatabaseDown";
 
 const InstagramIcon = ({ size = 18, className = "" }: { size?: number; className?: string }) => (
   <svg
@@ -25,12 +24,11 @@ const InstagramIcon = ({ size = 18, className = "" }: { size?: number; className
 );
 
 export default function Contact() {
-  const { data: settings } = useSettings();
+  const { data: settings, isError, error, refetch } = useSettings();
 
-  // Track page visit on mount
-  useEffect(() => {
-    analyticsService.trackPageVisit("Contact");
-  }, []);
+  if (isError) {
+    return <DatabaseDown error={error as Error} onRetry={() => refetch()} />;
+  }
 
   const pageVariants = {
     hidden: { opacity: 0 },
@@ -112,8 +110,7 @@ export default function Contact() {
                         <a 
                           href={mapsLink} 
                           target="_blank" 
-                          rel="noopener noreferrer" 
-                          onClick={() => analyticsService.trackLeadClick("maps_location_text_click")}
+                          rel="noopener noreferrer"
                           className="text-sm font-light text-zinc-200 hover:text-luxury-gold transition-colors"
                         >
                           {address}
@@ -126,8 +123,7 @@ export default function Contact() {
                       <div>
                         <p className="text-xs uppercase tracking-wider text-zinc-400 font-semibold mb-1">Telephone</p>
                         <a 
-                          href={`tel:${phone}`} 
-                          onClick={() => analyticsService.trackLeadClick("phone_call_click")}
+                          href={`tel:${phone}`}
                           className="text-sm font-light text-zinc-200 hover:text-luxury-gold transition-colors"
                         >
                           {phoneFormatted}
@@ -140,8 +136,7 @@ export default function Contact() {
                       <div>
                         <p className="text-xs uppercase tracking-wider text-zinc-400 font-semibold mb-1">Email</p>
                         <a 
-                          href={`mailto:${email}`} 
-                          onClick={() => analyticsService.trackLeadClick("email_send_click")}
+                          href={`mailto:${email}`}
                           className="text-sm font-light text-zinc-200 hover:text-luxury-gold transition-colors"
                         >
                           {email}
@@ -156,8 +151,7 @@ export default function Contact() {
                         <a 
                           href={instagramUrl} 
                           target="_blank" 
-                          rel="noopener noreferrer" 
-                          onClick={() => analyticsService.trackLeadClick("instagram_visit_click")}
+                          rel="noopener noreferrer"
                           className="text-sm font-light text-zinc-200 hover:text-luxury-gold transition-colors"
                         >
                           {instagramHandle}
@@ -205,7 +199,6 @@ export default function Contact() {
                     href={mapsLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => analyticsService.trackLeadClick("maps_get_directions_button_click")}
                     className="absolute bottom-4 right-4 z-10 px-4 py-2.5 bg-[#030303]/90 border border-luxury-gold/40 text-luxury-gold hover:bg-luxury-gold hover:text-black hover:border-luxury-gold text-[9px] tracking-widest font-sans font-semibold uppercase rounded-sm transition-all duration-300 shadow-2xl flex items-center gap-2"
                   >
                     <Compass size={11} className="animate-pulse" />
