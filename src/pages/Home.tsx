@@ -8,7 +8,7 @@ import {
   useSpring,
   useInView
 } from "framer-motion";
-import { ArrowDown, Sparkles, Play, X, ChevronLeft, ChevronRight, Maximize, Minimize, Phone } from "lucide-react";
+import { Sparkles, Play, X, ChevronLeft, ChevronRight, Maximize, Minimize, Phone } from "lucide-react";
 import { getImageUrl } from "@/utils/image";
 import { useSettings, useProducts, useCollections } from "@/hooks/useDbQueries";
 import { siteConfig } from "@/config/site";
@@ -329,7 +329,7 @@ function ProductCampaign({
       </div>
 
       {/* Full-bleed background media cover */}
-      <div 
+      <div
         onClick={() => onOpenLightbox(activeIdx)}
         className="absolute inset-0 z-0 w-full h-full select-none overflow-hidden cursor-zoom-in"
       >
@@ -388,6 +388,8 @@ function ProductCampaign({
           <div className="flex items-center space-x-3 pt-2">
             <button
               onClick={() => onOpenLightbox(activeIdx)}
+              onPointerDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
               className="text-[9px] tracking-[0.2em] uppercase font-sans text-luxury-gold hover:text-white transition-colors duration-300 font-semibold select-none border border-luxury-gold/30 hover:border-luxury-gold px-4 py-2 rounded-full bg-black/40 backdrop-blur-md"
             >
               Expand View ✦
@@ -407,6 +409,8 @@ function ProductCampaign({
           <div
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
             className={`group relative p-1.5 bg-[#09090b]/85 border border-white/20 rounded-sm shadow-[0_0_30px_rgba(197,168,128,0.25)] hover:shadow-[0_0_45px_rgba(197,168,128,0.4)] transition-all duration-700 pointer-events-auto ${isLandscape
               ? "w-full max-w-[480px] sm:max-w-[560px] aspect-[16/10]"
               : "w-[260px] sm:w-[320px] md:w-[360px] aspect-[3/4]"
@@ -414,7 +418,7 @@ function ProductCampaign({
           >
             {/* Inner keyline border & Draggable media viewport */}
             <div className="w-full h-full border border-white/10 rounded-sm overflow-hidden relative touch-pan-y">
-              
+
               {/* Draggable Media Carousel */}
               <motion.div
                 drag={mediaCount > 1 ? "x" : false}
@@ -474,11 +478,10 @@ function ProductCampaign({
                     {mediaList.map((_, mIdx) => (
                       <div
                         key={mIdx}
-                        className={`h-0.5 rounded-full transition-all duration-500 ${
-                          mIdx === activeIdx
+                        className={`h-0.5 rounded-full transition-all duration-500 ${mIdx === activeIdx
                             ? "w-6 bg-luxury-gold shadow-[0_0_8px_rgba(197,168,128,0.8)]"
                             : "w-2 bg-white/20"
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
@@ -525,24 +528,45 @@ function ProductCampaign({
   );
 }
 
+const tabSlideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 80 : -80,
+    opacity: 0,
+    filter: "blur(4px)",
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    filter: "blur(0px)",
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? -80 : 80,
+    opacity: 0,
+    filter: "blur(4px)",
+  }),
+};
+
 export default function Home() {
-  const { 
-    data: settings, 
-    isLoading: isSettingsLoading, 
-    isError: isSettingsError, 
-    error: settingsError, 
-    refetch: refetchSettings 
+  const {
+    data: settings,
+    isLoading: isSettingsLoading,
+    isError: isSettingsError,
+    error: settingsError,
+    refetch: refetchSettings
   } = useSettings();
 
-  const { 
-    data: collections = [], 
-    isLoading: isCollectionsLoading, 
-    isError: isCollectionsError, 
-    error: collectionsError, 
-    refetch: refetchCollections 
+  const {
+    data: collections = [],
+    isLoading: isCollectionsLoading,
+    isError: isCollectionsError,
+    error: collectionsError,
+    refetch: refetchCollections
   } = useCollections();
 
   const [activeCategory, setActiveCategory] = useState<string>("");
+  const [tabDirection, setTabDirection] = useState<number>(1);
+  const isDraggingTabRef = useRef<boolean>(false);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const phone = settings?.phone || contactConfig.phone;
   const phoneFormatted = settings?.phone_formatted || contactConfig.phoneFormatted;
@@ -554,14 +578,48 @@ export default function Home() {
     }
   }, [collections, activeCategory]);
 
-  // Lightbox view state manager
-  const [lightboxActiveProduct, setLightboxActiveProduct] = useState<Product | null>(null);
-  const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
-
   const categories = collections.map((col) => ({
     id: col.id,
     label: col.title.toUpperCase(),
   }));
+
+  const handleTabClick = (categoryId: string) => {
+    const currentIdx = categories.findIndex((c) => c.id === activeCategory);
+    const newIdx = categories.findIndex((c) => c.id === categoryId);
+    setTabDirection(newIdx >= currentIdx ? 1 : -1);
+    setActiveCategory(categoryId);
+  };
+
+  const handleNextCategory = () => {
+    const currentIdx = categories.findIndex((c) => c.id === activeCategory);
+    if (currentIdx !== -1 && currentIdx < categories.length - 1) {
+      setTabDirection(1);
+      setActiveCategory(categories[currentIdx + 1].id);
+    }
+  };
+
+  const handlePrevCategory = () => {
+    const currentIdx = categories.findIndex((c) => c.id === activeCategory);
+    if (currentIdx > 0) {
+      setTabDirection(-1);
+      setActiveCategory(categories[currentIdx - 1].id);
+    }
+  };
+
+  // Auto-scroll sticky tab capsule bar when activeCategory changes
+  useEffect(() => {
+    if (activeCategory && tabRefs.current[activeCategory]) {
+      tabRefs.current[activeCategory]?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [activeCategory]);
+
+  // Lightbox view state manager
+  const [lightboxActiveProduct, setLightboxActiveProduct] = useState<Product | null>(null);
+  const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
 
   // 2. Mouse coordinates tracking for ambient cursor spotlight glow
   const mouseX = useMotionValue(0);
@@ -579,23 +637,13 @@ export default function Home() {
   const heroImageParallax = useTransform(scrollY, [0, 500], [0, -50]);
   const heroImageScale = useTransform(scrollY, [0, 500], [1, 1.15]);
 
-  // 4. Scroll navigation action triggers
-  const scrollToCampaignGallery = () => {
-    const galleryElement = document.getElementById("campaign-gallery-root");
-    if (galleryElement) {
-      const yOffset = -56 - 24;
-      const y = galleryElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
-    }
-  };
-
   // 5. Query dynamic products directly from Supabase (single source of truth)
-  const { 
-    data: dbProducts = [], 
-    isLoading: isProductsLoading, 
-    isError: isProductsError, 
-    error: productsError, 
-    refetch: refetchProducts 
+  const {
+    data: dbProducts = [],
+    isLoading: isProductsLoading,
+    isError: isProductsError,
+    error: productsError,
+    refetch: refetchProducts
   } = useProducts(activeCategory);
 
   // If database is down or unreachable, immediately present DatabaseDown screen
@@ -676,7 +724,7 @@ export default function Home() {
 
       {/* SECTION 1: Dynamic Signboard Hero (Full width layout with centered text overlay) */}
       <div className="relative w-full h-[65vh] md:h-screen flex items-center justify-center overflow-hidden border-b border-white/5 bg-black">
-        
+
         {/* Full-width Signboard Backdrop image */}
         <div className="absolute inset-0 z-0 select-none overflow-hidden pointer-events-none w-full h-full">
           <motion.img
@@ -690,30 +738,10 @@ export default function Home() {
           <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black via-black/5 to-transparent pointer-events-none" />
         </div>
 
-        {/* Signboard Top-Right Callable Phone Pill (replacing the static signboard image number with a live, callable luxury pill) */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="absolute top-4 right-4 sm:top-6 sm:right-8 md:top-8 md:right-10 z-20 pointer-events-auto"
-        >
-          <a
-            href={`tel:${phone}`}
-            aria-label={`Call ${phoneFormatted}`}
-            className="group inline-flex items-center space-x-2 sm:space-x-2.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-luxury-gold/60 hover:border-luxury-gold bg-black/85 hover:bg-luxury-gold text-white hover:text-black backdrop-blur-md transition-all duration-300 shadow-[0_4px_16px_rgba(0,0,0,0.8),0_0_15px_rgba(197,168,128,0.25)] hover:shadow-[0_0_25px_rgba(197,168,128,0.6)] cursor-pointer"
-          >
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-luxury-gold/20 text-luxury-gold group-hover:bg-black group-hover:text-luxury-gold transition-colors duration-300">
-              <Phone size={11} className="transition-transform group-hover:scale-110" />
-            </span>
-            <span className="font-sans font-semibold text-[11px] sm:text-xs md:text-sm tracking-widest text-zinc-100 group-hover:text-black transition-colors duration-300">
-              {phoneFormatted}
-            </span>
-          </a>
-        </motion.div>
 
         {/* Bottom overlay container for text content & explore button (75% down, copiable text) */}
         <div className="absolute bottom-[6vh] md:bottom-[8vh] z-10 flex flex-col items-center text-center space-y-5 max-w-2xl w-full px-6 justify-center pointer-events-auto">
-          
+
           <div className="space-y-2">
             <motion.p
               initial={{ y: 15, opacity: 0 }}
@@ -730,35 +758,27 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
               className="text-[10px] sm:text-xs tracking-[0.2em] text-zinc-300 uppercase font-sans font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] select-text selection:bg-luxury-gold selection:text-black"
             >
-              {settings?.address 
-                ? settings.address 
+              {settings?.address
+                ? settings.address
                 : (siteConfig as any).address || "Beed, Maharashtra"}
             </motion.p>
           </div>
 
-          {/* Action CTAs: Direct Call & Explore Lookbook */}
+          {/* Action CTA: Direct Call styled with Explore Lookbook glass aesthetic */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto"
+            className="pt-2 flex items-center justify-center w-full sm:w-auto"
           >
             <a
               href={`tel:${phone}`}
-              className="w-full sm:w-auto group inline-flex items-center justify-center space-x-2.5 px-7 py-4 bg-luxury-gold hover:bg-[#d8be96] text-black text-xs tracking-widest uppercase font-semibold font-sans rounded-sm transition-all duration-300 shadow-luxury-glow hover:scale-[1.02]"
+              aria-label={`Call ${phoneFormatted}`}
+              className="w-full sm:w-auto group/btn inline-flex items-center justify-center space-x-3 px-7 py-4 bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 hover:border-white text-xs tracking-widest uppercase font-semibold font-sans rounded-sm transition-all duration-300 backdrop-blur-sm shadow-luxury-glow"
             >
-              <Phone size={14} className="fill-black transition-transform group-hover:scale-110" />
-              <span>Call: {phoneFormatted}</span>
+              <Phone size={14} className="transition-transform duration-300 group-hover/btn:scale-110" />
+              <span>{phoneFormatted}</span>
             </a>
-
-            <button
-              onClick={() => {                scrollToCampaignGallery();
-              }}
-              className="w-full sm:w-auto group/btn inline-flex items-center justify-center space-x-3 px-7 py-4 bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 hover:border-white text-xs tracking-widest uppercase font-semibold font-sans rounded-sm transition-all duration-300 backdrop-blur-sm"
-            >
-              <span>Explore Lookbook</span>
-              <ArrowDown size={14} className="transform transition-transform duration-300 group-hover/btn:translate-y-1 animate-bounce" />
-            </button>
           </motion.div>
 
         </div>
@@ -772,10 +792,12 @@ export default function Home() {
             return (
               <button
                 key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold outline-none transition-colors duration-150 flex-shrink-0 whitespace-nowrap ${
-                  isActive ? "text-black" : "text-zinc-500 hover:text-zinc-200"
-                }`}
+                ref={(el) => {
+                  tabRefs.current[cat.id] = el;
+                }}
+                onClick={() => handleTabClick(cat.id)}
+                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold outline-none transition-colors duration-150 flex-shrink-0 whitespace-nowrap ${isActive ? "text-black" : "text-zinc-500 hover:text-zinc-200"
+                  }`}
               >
                 {isActive && (
                   <motion.span
@@ -796,19 +818,44 @@ export default function Home() {
         </div>
       </div>
 
-      {/* SECTION 3: Campaign Lookbook — GPU crossfade on category switch */}
-      <div id="campaign-gallery-root" className="w-full relative z-10 bg-black">
-        <AnimatePresence mode="wait">
+      {/* SECTION 3: Campaign Lookbook — Smooth real-time swipeable category tabs */}
+      <div id="campaign-gallery-root" className="w-full relative z-10 bg-black overflow-hidden select-none">
+        <AnimatePresence mode="wait" custom={tabDirection}>
           <motion.div
             key={activeCategory}
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            custom={tabDirection}
+            variants={tabSlideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{
-              duration: 0.22,
-              ease: [0.25, 0.46, 0.45, 0.94],
+              x: { type: "spring", stiffness: 350, damping: 35, mass: 0.8 },
+              opacity: { duration: 0.24, ease: "easeOut" },
+              filter: { duration: 0.24 },
             }}
-            style={{ willChange: "opacity, transform" }}
+            drag="x"
+            dragDirectionLock
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.25}
+            onDragStart={() => {
+              isDraggingTabRef.current = true;
+            }}
+            onDragEnd={(_e, info) => {
+              setTimeout(() => {
+                isDraggingTabRef.current = false;
+              }, 60);
+
+              const swipeThreshold = 40;
+              const velocityThreshold = 220;
+
+              if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
+                handleNextCategory();
+              } else if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
+                handlePrevCategory();
+              }
+            }}
+            className="w-full touch-pan-y"
+            style={{ touchAction: "pan-y", willChange: "transform, opacity" }}
           >
             {loadedItems.length === 0 && !isProductsLoading ? (
               /* ── Empty State ── */
@@ -838,7 +885,9 @@ export default function Home() {
                   key={item.uniqueId}
                   item={item}
                   index={index}
-                  onOpenLightbox={(initialMediaIdx) => {                    setLightboxActiveProduct(item);
+                  onOpenLightbox={(initialMediaIdx) => {
+                    if (isDraggingTabRef.current) return;
+                    setLightboxActiveProduct(item);
                     setLightboxInitialIndex(initialMediaIdx);
                   }}
                 />
