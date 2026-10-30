@@ -329,7 +329,7 @@ function ProductCampaign({
       </div>
 
       {/* Full-bleed background media cover */}
-      <div
+      <div 
         onClick={() => onOpenLightbox(activeIdx)}
         className="absolute inset-0 z-0 w-full h-full select-none overflow-hidden cursor-zoom-in"
       >
@@ -418,7 +418,7 @@ function ProductCampaign({
           >
             {/* Inner keyline border & Draggable media viewport */}
             <div className="w-full h-full border border-white/10 rounded-sm overflow-hidden relative touch-pan-y">
-
+              
               {/* Draggable Media Carousel */}
               <motion.div
                 drag={mediaCount > 1 ? "x" : false}
@@ -478,10 +478,11 @@ function ProductCampaign({
                     {mediaList.map((_, mIdx) => (
                       <div
                         key={mIdx}
-                        className={`h-0.5 rounded-full transition-all duration-500 ${mIdx === activeIdx
+                        className={`h-0.5 rounded-full transition-all duration-500 ${
+                          mIdx === activeIdx
                             ? "w-6 bg-luxury-gold shadow-[0_0_8px_rgba(197,168,128,0.8)]"
                             : "w-2 bg-white/20"
-                          }`}
+                        }`}
                       />
                     ))}
                   </div>
@@ -547,20 +548,20 @@ const tabSlideVariants = {
 };
 
 export default function Home() {
-  const {
-    data: settings,
-    isLoading: isSettingsLoading,
-    isError: isSettingsError,
-    error: settingsError,
-    refetch: refetchSettings
+  const { 
+    data: settings, 
+    isLoading: isSettingsLoading, 
+    isError: isSettingsError, 
+    error: settingsError, 
+    refetch: refetchSettings 
   } = useSettings();
 
-  const {
-    data: collections = [],
-    isLoading: isCollectionsLoading,
-    isError: isCollectionsError,
-    error: collectionsError,
-    refetch: refetchCollections
+  const { 
+    data: collections = [], 
+    isLoading: isCollectionsLoading, 
+    isError: isCollectionsError, 
+    error: collectionsError, 
+    refetch: refetchCollections 
   } = useCollections();
 
   const [activeCategory, setActiveCategory] = useState<string>("");
@@ -638,12 +639,12 @@ export default function Home() {
   const heroImageScale = useTransform(scrollY, [0, 500], [1, 1.15]);
 
   // 5. Query dynamic products directly from Supabase (single source of truth)
-  const {
-    data: dbProducts = [],
-    isLoading: isProductsLoading,
-    isError: isProductsError,
-    error: productsError,
-    refetch: refetchProducts
+  const { 
+    data: dbProducts = [], 
+    isLoading: isProductsLoading, 
+    isError: isProductsError, 
+    error: productsError, 
+    refetch: refetchProducts 
   } = useProducts(activeCategory);
 
   // If database is down or unreachable, immediately present DatabaseDown screen
@@ -724,7 +725,7 @@ export default function Home() {
 
       {/* SECTION 1: Dynamic Signboard Hero (Full width layout with centered text overlay) */}
       <div className="relative w-full h-[65vh] md:h-screen flex items-center justify-center overflow-hidden border-b border-white/5 bg-black">
-
+        
         {/* Full-width Signboard Backdrop image */}
         <div className="absolute inset-0 z-0 select-none overflow-hidden pointer-events-none w-full h-full">
           <motion.img
@@ -741,7 +742,7 @@ export default function Home() {
 
         {/* Bottom overlay container for text content & explore button (75% down, copiable text) */}
         <div className="absolute bottom-[6vh] md:bottom-[8vh] z-10 flex flex-col items-center text-center space-y-5 max-w-2xl w-full px-6 justify-center pointer-events-auto">
-
+          
           <div className="space-y-2">
             <motion.p
               initial={{ y: 15, opacity: 0 }}
@@ -758,8 +759,8 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
               className="text-[10px] sm:text-xs tracking-[0.2em] text-zinc-300 uppercase font-sans font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] select-text selection:bg-luxury-gold selection:text-black"
             >
-              {settings?.address
-                ? settings.address
+              {settings?.address 
+                ? settings.address 
                 : (siteConfig as any).address || "Beed, Maharashtra"}
             </motion.p>
           </div>
@@ -796,8 +797,9 @@ export default function Home() {
                   tabRefs.current[cat.id] = el;
                 }}
                 onClick={() => handleTabClick(cat.id)}
-                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold outline-none transition-colors duration-150 flex-shrink-0 whitespace-nowrap ${isActive ? "text-black" : "text-zinc-500 hover:text-zinc-200"
-                  }`}
+                className={`relative px-5 md:px-7 py-2.5 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-sans font-semibold outline-none transition-colors duration-150 flex-shrink-0 whitespace-nowrap ${
+                  isActive ? "text-black" : "text-zinc-500 hover:text-zinc-200"
+                }`}
               >
                 {isActive && (
                   <motion.span
